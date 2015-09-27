@@ -1,0 +1,46 @@
+CREATE VIEW VW_TRACKER_REQUISITION_material
+AS
+select  category_planning_id, product_codes, production_type, plan_item_code, transaction_id, category_name, style_code, color_code, material_code, material_name, material_type, 
+(CASE 
+WHEN custom='N' THEN material_issue_min_date 
+WHEN custom='Y' AND cat_custom_dept_changed='N' THEN cat_custom_material_issue_min_date
+WHEN custom='Y' AND asis_dept_changed='Y' THEN dept_custom_material_issue_min_date
+END) AS Issue_Min_Date,
+(CASE 
+WHEN custom='N' THEN material_issue_max_date 
+WHEN custom='Y' AND cat_custom_dept_changed='N' THEN cat_custom_material_issue_max_date
+WHEN custom='Y' AND asis_dept_changed='Y' THEN dept_custom_material_issue_max_date
+END) AS Issue_Max_Date,
+(CASE 
+WHEN custom='N' THEN material_delivery_min_date 
+WHEN custom='Y' AND cat_custom_dept_changed='N' THEN cat_custom_material_delivery_min_date
+WHEN custom='Y' AND asis_dept_changed='Y' THEN dept_custom_material_delivery_min_date
+END) AS Delivery_Min_Date,
+(CASE 
+WHEN custom='N' THEN material_delivery_max_date 
+WHEN custom='Y' AND cat_custom_dept_changed='N' THEN cat_custom_material_delivery_max_date
+WHEN custom='Y' AND asis_dept_changed='Y' THEN dept_custom_material_delivery_max_date
+END) AS Delivery_Max_Date,
+(CASE 
+WHEN custom='N' THEN asis_material_total_quantity 
+WHEN custom='Y' AND cat_custom_dept_changed='N' THEN cat_custom_material_total_quantity
+WHEN custom='Y' AND asis_dept_changed='Y' THEN dept_custom_material_total_quantity
+END) AS material_Total_quantity,
+sc_planning_main_item_id, style_ccode_id, sc_asis_plan_material_item_id, cat_custom_plan_material_item_id,sc_custom_dept_plan_material_item_id,
+custom, cat_custom_dept_changed,asis_dept_changed
+ from 
+(
+	select 
+	cat.*,
+        sc_custom_dept_plan_material_item_id,	
+	dept_custom_material_total_quantity,
+	dept_custom_material_issue_min_date,
+	dept_custom_material_issue_max_date,
+	dept_custom_material_delivery_min_date,
+	dept_custom_material_delivery_max_date 
+	from vw_notification_asis_cat_custom_material cat
+	 LEFT JOIN vw_notification_asis_dept_custom_material dept 
+	ON cat.transaction_id=dept.transaction_id 
+	AND cat.cat_custom_plan_material_item_id=dept.sc_custom_plan_material_item_id
+) vw_notification_material 
+order by category_planning_id;
