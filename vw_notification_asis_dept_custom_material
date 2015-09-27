@@ -1,0 +1,56 @@
+-- View: vw_notification_asis_dept_custom_material
+
+-- DROP VIEW vw_notification_asis_dept_custom_material;
+
+CREATE OR REPLACE VIEW vw_notification_asis_dept_custom_material AS
+ SELECT v_asis_material.category_planning_id,
+    v_asis_material.product_codes,
+    v_asis_material.production_type,
+    v_asis_material.sc_planning_main_item_id,
+    v_asis_material.plan_item_code,
+    v_asis_material.transaction_id,
+    v_asis_material.total_quantity,
+    v_asis_material.raw_material_min_date,
+    v_asis_material.raw_material_max_date,
+    v_asis_material.style_item_code,
+    v_asis_material.category_name,
+    v_asis_material.style_item_name,
+    v_asis_material.style_code,
+    v_asis_material.color_code,
+    v_asis_material.color,
+    v_asis_material.style_item_quantity,
+    v_asis_material.style_item_std_unit,
+    v_asis_material.style_total_cost,
+    v_asis_material.style_ccode_id,
+    v_asis_material.item_code,
+    v_asis_material.item_name,
+    v_asis_material.item_quantity,
+    v_asis_material.item_std_unit,
+    v_asis_material.material_code,
+    v_asis_material.material_name,
+    v_asis_material.material_colour,
+    v_asis_material.material_type,
+    v_asis_material.material_std_unit,
+    v_asis_material.material_quantity,
+    v_asis_material.sc_asis_plan_material_item_id,
+    v_asis_material.mat_trans_id,
+    v_asis_material.asis_material_total_quantity,
+    v_asis_material.material_issue_min_date,
+    v_asis_material.material_issue_max_date,
+    v_asis_material.material_delivery_min_date,
+    v_asis_material.material_delivery_max_date,
+    v_asis_material.custom,
+    v_asis_material.sent_for_approval,
+    v_asis_material.item_approved,
+    asis_dept_custom_material.sc_custom_plan_material_item_id,
+    asis_dept_custom_material.sc_custom_dept_plan_material_item_id,
+    asis_dept_custom_material.material_total_quantity AS dept_custom_material_total_quantity,
+    asis_dept_custom_material.material_issue_max_date AS dept_custom_material_issue_min_date,
+    asis_dept_custom_material.material_issue_max_date AS dept_custom_material_issue_max_date,
+    asis_dept_custom_material.material_delivery_min_date AS dept_custom_material_delivery_min_date,
+    asis_dept_custom_material.material_delivery_max_date AS dept_custom_material_delivery_max_date
+   FROM vw_sc_dept_item_disp_asis_material v_asis_material
+     JOIN sc_dept_plan_items_custom_material asis_dept_custom_material ON asis_dept_custom_material.transaction_id::text = v_asis_material.transaction_id::text;
+
+ALTER TABLE vw_notification_asis_dept_custom_material
+  OWNER TO postgres;
