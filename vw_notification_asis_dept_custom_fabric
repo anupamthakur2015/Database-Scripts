@@ -1,0 +1,58 @@
+-- View: vw_notification_asis_dept_custom_fabric
+
+-- DROP VIEW vw_notification_asis_dept_custom_fabric cascade;
+
+CREATE OR REPLACE VIEW vw_notification_asis_dept_custom_fabric AS 
+ SELECT v_asis_fabric.category_planning_id,
+    v_asis_fabric.product_codes,
+    v_asis_fabric.production_type,
+    v_asis_fabric.sc_planning_main_item_id,
+    v_asis_fabric.plan_item_code,
+    v_asis_fabric.transaction_id,
+    v_asis_fabric.total_quantity,
+    v_asis_fabric.raw_material_min_date,
+    v_asis_fabric.raw_material_max_date,
+    v_asis_fabric.style_item_code,
+    v_asis_fabric.category_name,
+    v_asis_fabric.style_item_name,
+    v_asis_fabric.style_code,
+    v_asis_fabric.color_code,
+    v_asis_fabric.color,
+    v_asis_fabric.style_item_quantity,
+    v_asis_fabric.style_item_std_unit,
+    v_asis_fabric.style_total_cost,
+    v_asis_fabric.style_ccode_id,
+    v_asis_fabric.item_code,
+    v_asis_fabric.item_name,
+    v_asis_fabric.quantity,
+    v_asis_fabric.item_std_unit,
+    v_asis_fabric.fabric_code,
+    v_asis_fabric.fabric_name,
+    v_asis_fabric.fabric_type,
+    v_asis_fabric.fabric_std_unit,
+    v_asis_fabric.unit_std_width,
+    v_asis_fabric.length_metre,
+    v_asis_fabric.width_inch,
+    v_asis_fabric.shrinkage_metre,
+    v_asis_fabric.pcs,
+    v_asis_fabric.total_measurement,
+    v_asis_fabric.sc_asis_plan_fabric_item_id,
+    v_asis_fabric.fab_trans_id,
+    v_asis_fabric.sent_for_approval,
+    v_asis_fabric.item_approved,
+    asis_dept_custom_fabric.sc_custom_plan_fabric_item_id,
+    asis_dept_custom_fabric.sc_custom_dept_plan_fabric_item_id,
+    asis_dept_custom_fabric.fabric_total_length_metre AS dept_custom_fabric_total_length_metre,
+    asis_dept_custom_fabric.fabric_total_width_inch AS dept_custom_fabric_total_width_inch,
+    asis_dept_custom_fabric.fabric_total_shrinkage_metre AS dept_custom_fabric_total_shrinkage_metre,
+    asis_dept_custom_fabric.fabric_total_pcs AS dept_custom_fabric_total_pcs,
+    asis_dept_custom_fabric.fabric_total_measurement AS dept_custom_fabric_total_measurement,
+    asis_dept_custom_fabric.fabric_issue_min_date AS dept_custom_fabric_issue_min_date,
+    asis_dept_custom_fabric.fabric_issue_max_date AS dept_custom_fabric_issue_max_date,
+    asis_dept_custom_fabric.fabric_delivery_min_date AS dept_custom_fabric_delivery_min_date,
+    asis_dept_custom_fabric.fabric_delivery_max_date AS dept_custom_fabric_delivery_max_date
+   FROM vw_sc_dept_item_disp_asis_fabric v_asis_fabric
+     JOIN sc_dept_plan_items_custom_fabric asis_dept_custom_fabric ON asis_dept_custom_fabric.transaction_id::text = v_asis_fabric.transaction_id::text;
+
+ALTER TABLE vw_notification_asis_dept_custom_fabric
+  OWNER TO postgres;
