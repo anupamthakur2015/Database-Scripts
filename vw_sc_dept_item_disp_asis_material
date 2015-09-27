@@ -1,0 +1,51 @@
+-- View: vw_sc_dept_item_disp_asis_material
+
+-- DROP VIEW vw_sc_dept_item_disp_asis_material;
+
+CREATE OR REPLACE VIEW vw_sc_dept_item_disp_asis_material AS 
+SELECT v_dept_item.category_planning_id,
+v_dept_item.product_codes,
+v_dept_item.production_type,
+v_dept_item.sc_planning_main_item_id,
+v_dept_item.plan_item_code,
+v_dept_item.transaction_id,
+v_dept_item.total_quantity,
+v_dept_item.raw_material_min_date,
+v_dept_item.raw_material_max_date,
+v_dept_item.style_item_code,
+v_dept_item.category_name,
+v_dept_item.style_item_name,
+v_dept_item.style_code,
+v_dept_item.color_code,
+v_dept_item.color,
+v_dept_item.style_item_quantity,
+v_dept_item.style_item_std_unit,
+v_dept_item.style_total_cost,
+v_material_details.style_ccode_id,
+v_material_details.item_code,
+v_material_details.item_name,
+v_material_details.item_quantity,
+v_material_details.item_std_unit,
+v_material_details.material_code,
+v_material_details.material_name,
+v_material_details.material_colour,
+v_material_details.material_type,
+v_material_details.material_std_unit,
+v_material_details.material_quantity,
+sc_asis_material.sc_asis_plan_material_item_id,
+sc_asis_material.transaction_id AS mat_trans_id,
+sc_asis_material.material_total_quantity AS asis_material_total_quantity,
+sc_asis_material.material_issue_min_date,
+sc_asis_material.material_issue_max_date,
+sc_asis_material.material_delivery_min_date,
+sc_asis_material.material_delivery_max_date,
+sc_asis_material.custom,
+sc_asis_material.dept_changed,
+sc_asis_material.sent_for_approval,
+v_dept_item.item_approved
+FROM vw_sc_dept_item_disp v_dept_item
+JOIN sc_category_planning_items_asis_material sc_asis_material ON v_dept_item.sc_planning_main_item_id = sc_asis_material.sc_planning_main_item_id
+LEFT JOIN vw_style_ccode_item_material_details v_material_details ON v_material_details.item_code::text = v_dept_item.plan_item_code::text;
+
+ALTER TABLE vw_sc_dept_item_disp_asis_material
+OWNER TO postgres;
