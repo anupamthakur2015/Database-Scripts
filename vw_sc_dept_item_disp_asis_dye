@@ -1,0 +1,63 @@
+-- View: vw_sc_dept_item_disp_asis_dye
+
+-- DROP VIEW vw_sc_dept_item_disp_asis_dye;
+
+CREATE OR REPLACE VIEW vw_sc_dept_item_disp_asis_dye AS
+ SELECT v_dept_item.category_planning_id,
+    v_dept_item.product_codes,
+    v_dept_item.production_type,
+    v_dept_item.sc_planning_main_item_id,
+    v_dept_item.plan_item_code,
+    v_dept_item.transaction_id,
+    v_dept_item.total_quantity,
+    v_dept_item.raw_material_min_date,
+    v_dept_item.raw_material_max_date,
+    v_dept_item.style_item_code,
+    v_dept_item.category_name,
+    v_dept_item.style_item_name,
+    v_dept_item.style_code,
+    v_dept_item.color_code,
+    v_dept_item.color,
+    v_dept_item.style_item_quantity,
+    v_dept_item.style_item_std_unit,
+    v_dept_item.style_total_cost,
+    v_dye_details.style_ccode_id,
+    v_dye_details.item_code,
+    v_dye_details.item_name,
+    v_dye_details.item_quantity,
+    v_dye_details.item_std_unit,
+    v_dye_details.dye_code,
+    v_dye_details.dye_colour_name,
+    v_dye_details.generic_color_name,
+    v_dye_details.dye_process_name,
+    v_dye_details.num_colours,
+    v_dye_details.color_hex_codes,
+    v_dye_details.length_metre,
+    v_dye_details.width_inches,
+    v_dye_details.pcs,
+    v_dye_details.total_measurement,
+    v_dye_details.total_cost,
+    sc_asis_dye.sc_asis_plan_dye_item_id,
+    sc_asis_dye.transaction_id AS dye_trans_id,
+    sc_asis_dye.dye_total_length_metre AS asis_dye_total_length_metre,
+    sc_asis_dye.dye_total_width_inches AS asis_dye_total_width_inch,
+    sc_asis_dye.dye_total_pcs AS asis_dye_total_pcs,
+    sc_asis_dye.dye_total_measurement AS asis_dye_total_measurement,
+    sc_asis_dye.dye_issue_min_date,
+    sc_asis_dye.dye_issue_max_date,
+    sc_asis_dye.dye_delivery_min_date,
+    sc_asis_dye.dye_delivery_max_date,
+    sc_asis_dye.custom,
+    sc_asis_dye.dept_changed,
+    item_fabric_details.fabric_code,
+    item_fabric_details.fabric_name,
+    item_fabric_details.fabric_type,
+    sc_asis_dye.sent_for_approval,
+    v_dept_item.item_approved
+   FROM vw_sc_dept_item_disp v_dept_item
+     JOIN sc_category_planning_items_asis_dye sc_asis_dye ON v_dept_item.sc_planning_main_item_id = sc_asis_dye.sc_planning_main_item_id
+     LEFT JOIN vw_style_ccode_item_dye_details v_dye_details ON v_dye_details.item_code::text = v_dept_item.plan_item_code::text
+     LEFT JOIN vw_style_ccode_item_fabric_details item_fabric_details ON item_fabric_details.item_code::text = v_dept_item.plan_item_code::text;
+
+ALTER TABLE vw_sc_dept_item_disp_asis_dye
+  OWNER TO postgres;
