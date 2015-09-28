@@ -1,0 +1,37 @@
+----- 1. SQL Query for Fabric Requisition Generation Slip screen --------
+
+select * from VW_TRACKER_REQUISITION_FABRIC where Issue_Max_Date>=current_date;
+
+----- 2. SQL Query for Fabric Approval Sheet screen --------
+
+select * from TRACKER_REQUISITION_FABRIC where approved IS NULL;
+
+----- 3. SQL Query for Fabric Designer Requisition Pending Sheet screen --------
+
+select * from TRACKER_REQUISITION_FABRIC where approved='N'
+--UNION ALL
+--select * from VW_TRACKER_REQUISITION_FABRIC where Issue_Max_Date<current_date;
+
+
+----- 4. SQL Query for Fabric Order Raised Sheet screen --------
+
+select * from TRACKER_ORDERS_FABRIC orders JOIN TRACKER_REQUISITION_FABRIC requis ON orders.fabric_requisition_id=requis.fabric_requisition_id 
+WHERE orders.issued IS NULL;
+
+----- 5. SQL Query for Fabric Order Delivery Sheet screen --------
+
+select * from TRACKER_ORDERS_FABRIC orders JOIN TRACKER_REQUISITION_FABRIC requis ON orders.fabric_requisition_id=requis.fabric_requisition_id 
+WHERE orders.issued='Y' and delivered IS NULL;
+
+
+----- 6. SQL Query for Fabric Department Pending Sheet screen --------
+
+select * from TRACKER_ORDERS_FABRIC orders JOIN TRACKER_REQUISITION_FABRIC requis ON orders.fabric_requisition_id=requis.fabric_requisition_id 
+WHERE orders.issued='Y' and delivered='N';
+
+
+----- 7. SQL Query for Fabric Order Received Delivery Confirmation Sheet screen --------
+
+select * from TRACKER_ORDERS_FABRIC orders JOIN TRACKER_REQUISITION_FABRIC requis ON orders.fabric_requisition_id=requis.fabric_requisition_id 
+WHERE orders.issued='Y' and delivered='Y' and designer_received IS NULL;
+
