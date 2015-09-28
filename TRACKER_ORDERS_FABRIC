@@ -1,0 +1,17 @@
+CREATE TABLE TRACKER_ORDERS_FABRIC
+(
+	order_id serial NOT NULL UNIQUE,
+	fabric_order_no varchar(500) NOT NULL,
+	fabric_requisition_id int NOT NULL,
+	issued char(1),
+	customized char(1),
+	delivered char(1),
+	actual_delivery_date timestamp,
+	designer_received char(1),
+	designer_received_date timestamp,
+	designer_rejected char(1),
+	designer_returned char(1),
+        re_issue char(1),
+	parent_order_id int,	
+	PRIMARY KEY (order_id)
+) WITHOUT OIDS;
