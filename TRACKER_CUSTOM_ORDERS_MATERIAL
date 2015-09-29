@@ -1,0 +1,8 @@
+CREATE TABLE TRACKER_CUSTOM_ORDERS_MATERIAL
+(
+	material_custom_order_id serial NOT NULL UNIQUE,
+	order_id int NOT NULL,
+	material_total_quantity int NOT NULL,
+	total_amount float,
+	PRIMARY KEY (material_custom_order_id)
+) WITHOUT OIDS;
