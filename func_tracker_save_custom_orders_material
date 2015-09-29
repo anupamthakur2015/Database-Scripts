@@ -1,0 +1,25 @@
+CREATE OR REPLACE FUNCTION func_tracker_save_custom_orders_material(
+	IN v_order_id int,
+	IN v_material_total_quantity int,
+	IN v_total_amount float,
+    OUT output_msg text,
+    OUT id integer)
+  RETURNS record AS
+$BODY$
+BEGIN   
+					
+		INSERT INTO tracker_custom_orders_material (
+		  order_id,
+		  material_total_quantity,		 
+		  total_amount
+		)
+		VALUES(			
+		$1,
+		$2,
+		$3
+		) RETURNING material_custom_order_id into id;
+		output_msg:='Successfully inserted';		
+	
+END
+$BODY$
+  LANGUAGE plpgsql;
