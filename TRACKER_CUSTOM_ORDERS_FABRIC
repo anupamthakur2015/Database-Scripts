@@ -1,0 +1,11 @@
+CREATE TABLE TRACKER_CUSTOM_ORDERS_FABRIC
+(
+	fabric_custom_order_id serial NOT NULL UNIQUE,
+	order_id int NOT NULL,
+	fabric_length float NOT NULL,
+	fabric_width float NOT NULL,
+	fabric_shrinkage float,
+	fabric_pcs int NOT NULL,
+	fabric_total_measurement float NOT NULL,
+	PRIMARY KEY (fabric_custom_order_id)
+) WITHOUT OIDS;
