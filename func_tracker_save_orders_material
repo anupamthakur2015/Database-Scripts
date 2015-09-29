@@ -1,0 +1,24 @@
+CREATE OR REPLACE FUNCTION func_tracker_save_orders_material(
+	IN v_material_order_no int,
+	IN v_material_requisition_id int,	
+    OUT output_msg text,
+    OUT id integer)
+  RETURNS record AS
+$BODY$
+BEGIN   
+					
+		INSERT INTO tracker_orders_material (
+		  material_order_no,
+		  material_requisition_id
+		)
+		VALUES(			
+		$1,
+		$2
+		) RETURNING order_id into id;
+				
+		UPDATE TRACKER_REQUISITION_MATERIAL SET approved='Y' WHERE material_requisition_id=v_material_requisition_id;
+		output_msg:='Successfully Updated';	
+		
+END
+$BODY$
+  LANGUAGE plpgsql;
