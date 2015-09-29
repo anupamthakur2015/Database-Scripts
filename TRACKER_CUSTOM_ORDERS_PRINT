@@ -1,0 +1,10 @@
+CREATE TABLE TRACKER_CUSTOM_ORDERS_PRINT
+(
+	print_custom_order_id serial NOT NULL UNIQUE,
+	order_id int NOT NULL,
+	print_length float NOT NULL,
+	print_width float NOT NULL,
+	print_pcs int NOT NULL,
+	print_total_measurement float NOT NULL,
+	PRIMARY KEY (print_custom_order_id)
+) WITHOUT OIDS;
