@@ -1,0 +1,10 @@
+CREATE TABLE TRACKER_CUSTOM_ORDERS_DYE
+(
+	dye_custom_order_id serial NOT NULL UNIQUE,
+	order_id int NOT NULL,
+	dye_length float NOT NULL,
+	dye_width float NOT NULL,
+	dye_pcs int NOT NULL,
+	dye_total_measurement float NOT NULL,
+	PRIMARY KEY (dye_custom_order_id)
+) WITHOUT OIDS;
