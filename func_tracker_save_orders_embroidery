@@ -1,0 +1,24 @@
+CREATE OR REPLACE FUNCTION func_tracker_save_orders_embroidery (
+	IN v_embrd_order_no VARCHAR(500),
+	IN v_embrd_requisition_id int,	
+    OUT output_msg text,
+    OUT id integer)
+  RETURNS record AS
+$BODY$
+BEGIN   
+					
+		INSERT INTO tracker_orders_embroidery (
+		  embrd_order_no,
+		  embrd_requisition_id
+		)
+		VALUES(			
+		$1,
+		$2
+		) RETURNING order_id into id;
+				
+		UPDATE TRACKER_REQUISITION_EMBROIDERY SET approved='Y' WHERE embrd_requisition_id=v_embrd_requisition_id;
+		output_msg:='Successfully Updated';	
+		
+END
+$BODY$
+  LANGUAGE plpgsql;
