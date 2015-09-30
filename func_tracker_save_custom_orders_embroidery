@@ -1,0 +1,43 @@
+CREATE OR REPLACE FUNCTION func_tracker_save_custom_orders_embroidery(
+		IN v_order_id int,
+		IN v_embrd_total_metre float,
+		IN v_embrd_total_pcs int,
+		IN v_embrd_total_set int,
+		IN v_embrd_total_line float,
+		IN v_embrd_total_length_inch1 float,
+		IN v_embr_total_width_inch2 float,
+		IN v_embrd_total_height_inch3 float,
+		IN v_embrd_total_measurement float,
+    OUT output_msg text,
+    OUT id integer)
+  RETURNS record AS
+$BODY$
+BEGIN   
+					
+		INSERT INTO tracker_custom_orders_embroidery (
+		order_id,
+		  embrd_total_metre,
+		  embrd_total_pcs,
+		  embrd_total_set,
+		  embrd_total_line,
+		  embrd_total_length_inch1,
+		  embr_total_width_inch2,
+		  embrd_total_height_inch3,
+		  embrd_total_measurement
+		)
+		VALUES(			
+		$1,
+		$2,
+		$3,
+		$4,
+		$5,
+		$6,
+		$7,
+		$8,
+		$9
+		) RETURNING embrd_custom_order_id into id;
+		output_msg:='Successfully inserted';		
+	
+END
+$BODY$
+  LANGUAGE plpgsql;
