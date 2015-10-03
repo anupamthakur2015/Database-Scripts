@@ -1,0 +1,2 @@
+----- 5. SQL Query for Print Order Delivery Sheet screen --------
+select * from VW_TRACKER_PRINT_ORDER_DELIVERY;
