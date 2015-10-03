@@ -1,0 +1,35 @@
+CREATE OR REPLACE FUNCTION func_tracker_save_custom_orders_dye(
+	IN v_order_id int,
+	IN v_dye_length float,
+	IN v_dye_width float,
+	IN v_dye_pcs int,
+	IN v_dye_total_measurement float,
+    OUT output_msg text,
+    OUT id integer)
+  RETURNS record AS
+$BODY$
+BEGIN   
+					
+		INSERT INTO tracker_custom_received_orders_dye (
+		  order_id,
+		  dye_length,
+		  dye_width,
+		  dye_pcs,
+		  dye_total_measurement,
+		  received_date
+		)
+		VALUES(			
+		$1,
+		$2,
+		$3,
+		$4,
+		$5,
+		CURRENT_TIMESTAMP
+		) RETURNING dye_custom_order_id into id;
+		output_msg:='Successfully inserted';
+		
+		UPDATE TRACKER_ORDERS_DYE SET customized='Y' WHERE order_id=$1;	
+	
+END
+$BODY$
+  LANGUAGE plpgsql;
