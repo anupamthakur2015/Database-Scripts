@@ -1,0 +1,68 @@
+CREATE OR REPLACE VIEW VW_TRACKER_DEPARTMENT_PENDING_FABRIC
+AS
+SELECT 
+original_requisition.order_id,
+original_requisition.fabric_order_no,
+original_requisition.fabric_requisition_id,
+original_requisition.issue_min_date,
+original_requisition.issue_max_date,
+original_requisition.transaction_id,
+original_requisition.delivery_min_date,
+original_requisition.delivery_max_date,
+original_requisition.category_name,
+original_requisition.style_code,
+original_requisition.designer_code,
+original_requisition.color_code,
+original_requisition.product_codes,
+original_requisition.item_code,
+original_requisition.production_types,
+original_requisition.fabric_code,
+original_requisition.fabric_name,
+original_requisition.fabric_type,
+original_requisition.fabric_length - received_orders.fabric_length_received AS fabric_length_pending,
+original_requisition.fabric_width - received_orders.fabric_width_received AS fabric_width_pending,
+original_requisition.fabric_shrinkage - received_orders.fabric_shrinkage_received AS fabric_shrinkage_pending,
+original_requisition.fabric_pcs - received_orders.fabric_pcs_received AS fabric_pcs_pending,
+original_requisition.fabric_total_measurement - received_orders.fabric_total_measurement_received AS fabric_total_measurement_pending
+FROM
+(
+	select 
+	orders.order_id,
+	orders.fabric_order_no,
+	orders.fabric_requisition_id,
+	requis.issue_min_date,
+	requis.issue_max_date,
+	requis.transaction_id,
+	requis.delivery_min_date,
+	requis.delivery_max_date,
+	requis.category_name,
+	requis.style_code,
+	requis.designer_code,
+	requis.color_code,
+	requis.product_codes,
+	requis.item_code,
+	requis.production_types,
+	requis.fabric_code,
+	requis.fabric_name,
+	requis.fabric_type,
+	requis.fabric_length,
+	requis.fabric_width,
+	requis.fabric_shrinkage,
+	requis.fabric_pcs,
+	requis.fabric_total_measurement 
+	FROM tracker_orders_fabric orders
+	JOIN tracker_requisition_fabric requis 
+	ON orders.fabric_requisition_id = requis.fabric_requisition_id
+	WHERE orders.issued IS NULL AND orders.customized = 'Y'
+) original_requisition,
+(
+	select order_id, 
+	sum(fabric_length) AS fabric_length_received,
+	sum(fabric_width) AS fabric_width_received,
+	sum(fabric_shrinkage) AS fabric_shrinkage_received,
+	sum(fabric_pcs) AS fabric_pcs_received,
+	sum(fabric_total_measurement) AS fabric_total_measurement_received
+	from tracker_custom_orders_fabric group by order_id
+) received_orders
+WHERE original_requisition.order_id=received_orders.order_id AND
+(original_requisition.fabric_total_measurement - received_orders.fabric_total_measurement_received)>0;
