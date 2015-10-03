@@ -1,0 +1,46 @@
+CREATE OR REPLACE FUNCTION func_tracker_update_main_order_delivered_print(IN v_order_id integer)
+  RETURNS VOID AS
+$BODY$
+BEGIN
+
+    UPDATE TRACKER_ORDERS_PRINT tod
+SET delivered='Y'
+FROM
+(
+	select 
+	requisitioned_order.order_id
+	from
+	(
+		select 
+		orders.order_id,
+		requis.print_length,
+		requis.print_width,
+		requis.print_pcs,
+		requis.print_total_measurement
+		FROM TRACKER_ORDERS_PRINT orders 
+		JOIN TRACKER_REQUISITION_PRINT requis 
+		ON orders.print_requisition_id=requis.print_requisition_id 
+	) requisitioned_order,
+	(
+		select order_id,
+		sum(print_length) AS received_print_length,
+		sum(print_width) AS received_print_width,
+		sum(print_pcs) AS received_print_pcs,
+		sum(print_total_measurement) AS received_print_total_measurement
+		from tracker_custom_received_orders_print 
+		group by order_id
+	) received_orders
+	WHERE 
+	requisitioned_order.order_id=received_orders.order_id AND 
+	(round(requisitioned_order.print_length)-round(received_print_length))=0 AND
+	(round(requisitioned_order.print_width)-round(received_print_width))=0 AND
+	(round(requisitioned_order.print_pcs)-round(received_print_pcs))=0 AND
+	(round(requisitioned_order.print_total_measurement)-round(received_print_total_measurement))=0
+) AS sub_print_orders
+WHERE 
+tod.order_id=sub_print_orders.order_id AND
+tod.order_id = v_order_id;
+
+END
+$BODY$
+  LANGUAGE plpgsql;
