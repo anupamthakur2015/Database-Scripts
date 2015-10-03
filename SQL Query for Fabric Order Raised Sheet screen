@@ -1,0 +1,3 @@
+----- 4. SQL Query for Fabric Order Raised Sheet screen --------
+select * from TRACKER_ORDERS_FABRIC orders JOIN TRACKER_REQUISITION_FABRIC requis ON orders.fabric_requisition_id=requis.fabric_requisition_id 
+WHERE orders.issued IS NULL and customized IS NULL;
