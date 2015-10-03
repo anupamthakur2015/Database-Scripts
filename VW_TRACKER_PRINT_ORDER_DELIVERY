@@ -1,0 +1,83 @@
+CREATE OR REPLACE VIEW VW_TRACKER_PRINT_ORDER_DELIVERY
+AS
+SELECT 
+*
+FROM
+( 
+	SELECT 
+		main_order.order_id,
+		print_order_no,
+		main_order.print_requisition_id,
+		issue_min_date,
+		issue_max_date,
+		transaction_id,
+		delivery_min_date,
+		delivery_max_date,
+		category_name,
+		style_code,
+		designer_code,
+		color_code,
+		product_codes,
+		item_code,
+		production_types,
+		print_code,
+		printing_type,
+		print_colour,
+		num_screens_blocks,
+		num_colours,
+		sample_reference,
+		(main_order.print_length-COALESCE(received_length,0)) AS print_length,
+		(main_order.print_width-COALESCE(received_width,0)) AS print_width,
+		(main_order.print_pcs-COALESCE(received_pcs,0)) AS print_pcs,
+		(main_order.print_total_measurement-COALESCE(received_total_measurement,0)) AS print_total_measurement
+		
+	FROM
+	(
+		select 
+		order_id,
+		print_order_no,
+		orders.print_requisition_id,
+		issue_min_date,
+		issue_max_date,
+		transaction_id,
+		delivery_min_date,
+		delivery_max_date,
+		category_name,
+		style_code,
+		designer_code,
+		color_code,
+		product_codes,
+		item_code,
+		production_types,
+		print_code,
+		printing_type,
+		print_colour,
+		num_screens_blocks,
+		num_colours,
+		print_length,
+		print_width,
+		print_pcs,
+		print_total_measurement,
+		sample_reference
+		from TRACKER_ORDERS_PRINT orders 
+		JOIN TRACKER_REQUISITION_PRINT requis ON orders.print_requisition_id=requis.print_requisition_id 
+		WHERE orders.issued='Y' and delivered IS NULL
+	) main_order
+	LEFT JOIN
+	(
+		select 
+		rcvd_orders.order_id,
+		sum(print_length) as received_length,
+		sum(print_width) as received_width,
+		sum(print_pcs) as received_pcs,
+		sum(print_total_measurement) as received_total_measurement
+		from 
+		TRACKER_CUSTOM_RECEIVED_ORDERS_PRINT rcvd_orders, 
+		TRACKER_ORDERS_PRINT orders 
+		where rcvd_orders.order_id=orders.order_id and orders.delivered IS NULL
+		group by rcvd_orders.order_id
+
+	) received_orders
+	ON received_orders.order_id=main_order.order_id
+) sub
+WHERE ((print_length<>0) OR (print_width<>0) OR (print_pcs<>0)) AND (print_total_measurement<>0);
