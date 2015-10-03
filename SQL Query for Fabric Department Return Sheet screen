@@ -1,0 +1,2 @@
+----- 8. SQL Query for Fabric Department Return Sheet screen --------
+select * from VW_TRACKER_DEPARTMENT_RETURN_FABRIC;
