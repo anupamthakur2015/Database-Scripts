@@ -1,0 +1,68 @@
+CREATE OR REPLACE FUNCTION func_tracker_update_main_order_delivered_embroidery(IN v_order_id integer)
+  RETURNS VOID AS
+$BODY$
+BEGIN
+
+    UPDATE TRACKER_ORDERS_EMBROIDERY tod
+SET delivered='Y'
+FROM
+(
+	select 
+	requisitioned_order.order_id
+	from
+	(
+		select 
+		orders.order_id,
+		requis.embrd_total_metre,
+		requis.embrd_total_pcs,
+		requis.embrd_total_set,
+		requis.embrd_total_line,
+		requis.embrd_total_length_inch1,
+		requis.embrd_total_width_inch2,
+		requis.embrd_total_height_inch3,
+		requis.embrd_total_measurement
+		FROM TRACKER_ORDERS_EMBROIDERY orders 
+		JOIN TRACKER_REQUISITION_EMBROIDERY requis 
+		ON orders.embrd_requisition_id=requis.embrd_requisition_id 
+	) requisitioned_order,
+	(
+		select order_id,
+		sum(embrd_total_metre) AS received_embrd_total_metre,
+		sum(embrd_total_pcs) AS received_embrd_total_pcs,
+		sum(embrd_total_set) AS received_embrd_total_set,
+		sum(embrd_total_line) AS received_embrd_total_line,
+		sum(embrd_total_length_inch1) received_embrd_total_length_inch1,
+		sum(embr_total_width_inch2) received_embrd_total_width_inch2,
+		sum(embrd_total_height_inch3) received_embrd_total_height_inch3,
+		sum(embrd_total_measurement) AS received_embrd_total_measurement
+		from tracker_custom_received_orders_embroidery 
+		group by order_id
+	) received_orders
+	WHERE 
+	requisitioned_order.order_id=received_orders.order_id AND 
+	(
+		(
+			(round(requisitioned_order.embrd_total_metre)-round(received_embrd_total_metre))=0 AND
+			(round(requisitioned_order.embrd_total_line)-round(received_embrd_total_line))=0 AND
+			(round(requisitioned_order.embrd_total_length_inch1)-round(received_embrd_total_length_inch1))=0
+		)
+		OR
+		(
+			(round(requisitioned_order.embrd_total_pcs)-round(received_embrd_total_pcs))=0 AND
+			(round(requisitioned_order.embrd_total_width_inch2)-round(received_embrd_total_width_inch2))=0
+		)
+		OR
+		(
+			(round(requisitioned_order.embrd_total_set)-round(received_embrd_total_set))=0 AND
+			(round(requisitioned_order.embrd_total_height_inch3)-round(received_embrd_total_height_inch3))=0
+		)
+	) AND
+	(round(requisitioned_order.embrd_total_measurement)-round(received_embrd_total_measurement))=0
+) AS sub_embrd_orders
+WHERE 
+tod.order_id=sub_embrd_orders.order_id AND
+tod.order_id = v_order_id;
+
+END
+$BODY$
+  LANGUAGE plpgsql;
