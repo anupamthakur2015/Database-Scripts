@@ -1,0 +1,63 @@
+CREATE OR REPLACE VIEW VW_TRACKER_DEPARTMENT_PENDING_MATERIAL
+AS
+SELECT 
+original_requisition.order_id,
+original_requisition.material_order_no, 
+original_requisition.material_requisition_id,
+original_requisition.issue_min_date,
+original_requisition.issue_max_date,
+original_requisition.transaction_id,
+original_requisition.delivery_min_date,
+original_requisition.delivery_max_date,
+original_requisition.category_name,
+original_requisition.style_code,
+original_requisition.designer_code,
+original_requisition.color_code,
+original_requisition.product_codes,
+original_requisition.item_code,
+original_requisition.production_types,
+original_requisition.material_code,
+original_requisition.material_type,
+original_requisition.material_colour,
+original_requisition.sample_reference,
+original_requisition.material_total_quantity-received_orders.quantity_received AS material_total_quantity_pending,
+original_requisition.total_amount-received_orders.amount_received AS total_amount_pending
+FROM
+(
+	select 
+	orders.order_id,
+	orders.material_order_no, 
+	orders.material_requisition_id,
+	requis.issue_min_date,
+	requis.issue_max_date,
+	requis.transaction_id,
+	requis.delivery_min_date,
+	requis.delivery_max_date,
+	requis.category_name,
+	requis.style_code,
+	requis.designer_code,
+	requis.color_code,
+	requis.product_codes,
+	requis.item_code,
+	requis.production_types,
+	requis.material_code,
+	requis.material_type,
+	requis.material_colour,
+	requis.material_total_quantity,
+	requis.total_amount,
+	requis.sample_reference
+	FROM TRACKER_ORDERS_MATERIAL orders 
+	JOIN TRACKER_REQUISITION_MATERIAL requis ON orders.material_requisition_id=requis.material_requisition_id 
+	WHERE orders.issued IS NULL and customized='Y'
+) original_requisition,
+(
+	select order_id,
+	sum(material_total_quantity) AS quantity_received,
+	sum(total_amount) AS amount_received
+	from tracker_custom_orders_material 
+	group by order_id
+) received_orders
+WHERE 
+original_requisition.order_id=received_orders.order_id AND 
+original_requisition.material_total_quantity-quantity_received>0 AND
+original_requisition.total_amount-amount_received>0;
