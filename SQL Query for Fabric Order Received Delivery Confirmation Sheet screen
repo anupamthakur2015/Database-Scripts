@@ -1,0 +1,2 @@
+----- 7. SQL Query for Fabric Order Received Delivery Confirmation Sheet screen --------
+select * from vw_tracker_fabric_received_delivery_confirmation;
