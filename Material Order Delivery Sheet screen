@@ -1,0 +1,2 @@
+----- 4. Updated SQL Query for Material Order Delivery Sheet screen --------
+select * from vw_tracker_material_order_delivery;
