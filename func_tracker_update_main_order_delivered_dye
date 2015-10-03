@@ -1,0 +1,46 @@
+CREATE OR REPLACE FUNCTION func_tracker_update_main_order_delivered_dye(IN v_order_id integer)
+  RETURNS VOID AS
+$BODY$
+BEGIN
+
+    UPDATE TRACKER_ORDERS_DYE tod
+SET delivered='Y'
+FROM
+(
+	select 
+	requisitioned_order.order_id
+	from
+	(
+		select 
+		orders.order_id,
+		requis.dye_length,
+		requis.dye_width,
+		requis.dye_pcs,
+		requis.dye_total_measurement
+		FROM TRACKER_ORDERS_DYE orders 
+		JOIN TRACKER_REQUISITION_DYE requis 
+		ON orders.dye_requisition_id=requis.dye_requisition_id 
+	) requisitioned_order,
+	(
+		select order_id,
+		sum(dye_length) AS received_dye_length,
+		sum(dye_width) AS received_dye_width,
+		sum(dye_pcs) AS received_dye_pcs,
+		sum(dye_total_measurement) AS received_dye_total_measurement
+		from tracker_custom_received_orders_dye 
+		group by order_id
+	) received_orders
+	WHERE 
+	requisitioned_order.order_id=received_orders.order_id AND 
+	(round(requisitioned_order.dye_length)-round(received_dye_length))=0 AND
+	(round(requisitioned_order.dye_width)-round(received_dye_width))=0 AND
+	(round(requisitioned_order.dye_pcs)-round(received_dye_pcs))=0 AND
+	(round(requisitioned_order.dye_total_measurement)-round(received_dye_total_measurement))=0
+) AS sub_dye_orders
+WHERE 
+tod.order_id=sub_dye_orders.order_id AND
+tod.order_id = v_order_id;
+
+END
+$BODY$
+  LANGUAGE plpgsql;
