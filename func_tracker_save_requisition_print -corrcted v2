@@ -1,0 +1,133 @@
+-- Function: func_tracker_save_requisition_print(date, date, character varying, date, date, text, character varying, character varying, character varying, character varying, character varying, character varying, character varying, character varying, character varying, integer, integer, double precision, double precision, integer, double precision, character varying, integer, integer, integer, integer, integer, character, character, character, double precision[], double precision[], integer[], double precision[])
+
+-- DROP FUNCTION func_tracker_save_requisition_print(date, date, character varying, date, date, text, character varying, character varying, character varying, character varying, character varying, character varying, character varying, character varying, character varying, integer, integer, double precision, double precision, integer, double precision, character varying, integer, integer, integer, integer, integer, character, character, character, double precision[], double precision[], integer[], double precision[]);
+
+CREATE OR REPLACE FUNCTION func_tracker_save_requisition_print(
+    IN v_issue_min_date date,
+    IN v_issue_max_date date,
+    IN v_transaction_id character varying,
+    IN v_delivery_min_date date,
+    IN v_delivery_max_date date,
+    IN v_category_name text,
+    IN v_style_code character varying,
+    IN v_designer_code character varying,
+    IN v_color_code character varying,
+    IN v_product_codes character varying,
+    IN v_item_code character varying,
+    IN v_production_types character varying,
+    IN v_print_code character varying,
+    IN v_printing_type character varying,
+    IN v_print_colour character varying,
+    IN v_num_screens_blocks integer,
+    IN v_num_colours integer,
+    IN v_print_length double precision,
+    IN v_print_width double precision,
+    IN v_print_pcs integer,
+    IN v_print_total_measurement double precision,
+    IN v_sample_reference character varying,
+    IN v_sc_planning_main_item_id integer,
+    IN v_style_ccode_id integer,
+    IN v_sc_asis_plan_print_item_id integer,
+    IN v_cat_custom_plan_print_item_id integer,
+    IN v_sc_custom_dept_plan_print_item_id integer,
+    IN v_sc_custom character,
+    IN v_sc_dept_changed character,
+    IN v_custom_requisition character DEFAULT NULL::bpchar,
+    IN v_custom_print_length double precision[] DEFAULT NULL::double precision[],
+    IN v_custom_print_width double precision[] DEFAULT NULL::double precision[],
+    IN v_custom_print_pcs integer[] DEFAULT NULL::integer[],
+    IN v_custom_print_total_measurement double precision[] DEFAULT NULL::double precision[],
+    OUT output_msg text,
+    OUT id integer)
+  RETURNS record AS
+$BODY$
+BEGIN   
+					
+		INSERT INTO tracker_requisition_print (
+			  issue_min_date,
+			  issue_max_date,
+			  transaction_id,
+			  delivery_min_date,
+			  delivery_max_date,
+			  category_name,
+			  style_code,
+			  designer_code,
+			  color_code,
+			  product_codes,
+			  item_code,
+			  production_types,
+			  print_code,
+			  printing_type,
+			  print_colour,
+			  num_screens_blocks,
+			  num_colours,
+			  print_length,
+			  print_width,
+			  print_pcs,
+			  print_total_measurement,
+			  sample_reference,
+			  sc_planning_main_item_id,
+			  style_ccode_id,
+			  sc_asis_plan_print_item_id,
+			  cat_custom_plan_print_item_id,
+			  sc_custom_dept_plan_print_item_id,
+			  sc_custom,
+			  sc_dept_changed
+		)
+		VALUES(			
+		$1,
+		$2,
+		$3,
+		$4,
+		$5,
+		$6,
+		$7,
+		$8,
+		$9,
+		$10,
+		$11,
+		$12,
+		$13,
+		$14,
+		$15,
+		$16,
+		$17,
+		$18,
+		$19,
+		$20,
+		$21,
+		$22,
+		$23,
+		$24,
+		$25,
+		$26,
+		$27,
+		$28,
+		$29
+		) RETURNING print_requisition_id into id;
+		output_msg:='Successfully inserted';	
+
+		IF v_custom_requisition='Y' THEN			
+		    INSERT INTO TRACKER_CUSTOM_REQUISITION_PRINT(
+			print_requisition_id,
+			  print_length,
+			  print_width,
+			  print_pcs,
+			  print_total_measurement
+			) 		
+			select 
+			id,
+			UNNEST(v_custom_print_length::float[]),
+			UNNEST(v_custom_print_width::float[]),
+			UNNEST(v_custom_print_pcs::integer[]),
+			UNNEST(v_custom_print_total_measurement::float[]);
+
+		END IF;
+	
+	
+END
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+ALTER FUNCTION func_tracker_save_requisition_print(date, date, character varying, date, date, text, character varying, character varying, character varying, character varying, character varying, character varying, character varying, character varying, character varying, integer, integer, double precision, double precision, integer, double precision, character varying, integer, integer, integer, integer, integer, character, character, character, double precision[], double precision[], integer[], double precision[])
+  OWNER TO postgres;
