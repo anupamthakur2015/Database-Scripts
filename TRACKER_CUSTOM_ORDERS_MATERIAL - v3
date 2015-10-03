@@ -1,0 +1,17 @@
+CREATE TABLE TRACKER_CUSTOM_ORDERS_MATERIAL
+(
+	material_custom_order_id serial NOT NULL UNIQUE,
+	order_id int NOT NULL,
+	material_total_quantity int NOT NULL,
+	total_amount float,
+	issued char(1) DEFAULT 'Y',
+	issued_date timestamp,
+	delivered char(1),
+	actual_delivery_date timestamp,
+	designer_received char(1),
+	designer_received_date timestamp,
+	designer_rejected char(1),
+	designer_returned char(1),
+	designer_not_accepted_reason text,
+	PRIMARY KEY (material_custom_order_id)
+) WITHOUT OIDS;
