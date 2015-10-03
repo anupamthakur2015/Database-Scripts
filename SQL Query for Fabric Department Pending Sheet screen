@@ -1,0 +1,2 @@
+----- 6. SQL Query for Fabric Department Pending Sheet screen --------
+select * from VW_TRACKER_DEPARTMENT_PENDING_FABRIC; 
