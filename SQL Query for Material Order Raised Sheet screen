@@ -1,0 +1,3 @@
+----- 4. Updated SQL Query for Material Order Raised Sheet screen --------
+select * from TRACKER_ORDERS_MATERIAL orders JOIN TRACKER_REQUISITION_MATERIAL requis ON orders.material_requisition_id=requis.material_requisition_id 
+WHERE orders.issued IS NULL and customized IS NULL;
