@@ -1,0 +1,2 @@
+----- 5. Updated SQL Query for Fabric Order Delivery Sheet screen --------
+select * from vw_tracker_fabric_order_delivery;
