@@ -1,0 +1,2 @@
+----- 6. Updated SQL Query for Material Department Pending Sheet screen --------
+select * from VW_TRACKER_DEPARTMENT_PENDING_MATERIAL;
