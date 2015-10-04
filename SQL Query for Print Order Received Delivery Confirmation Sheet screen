@@ -1,0 +1,2 @@
+----- 7. SQL Query for Print Order Received Delivery Confirmation Sheet screen --------
+select * from VW_TRACKER_PRINT_RECEIVED_DELIVERY_CONFIRMATION;
