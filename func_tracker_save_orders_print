@@ -1,0 +1,46 @@
+CREATE OR REPLACE FUNCTION func_tracker_save_orders_print(
+    IN v_print_order_no VARCHAR(500),
+    IN v_print_requisition_id int,
+    IN v_print_custom_requisition_id int,
+    IN v_custom_requisition char(1),
+    IN v_approve char(1),
+    OUT output_msg text,
+    OUT id integer)
+  RETURNS record AS
+$BODY$
+BEGIN   
+					
+		IF v_approve='Y' THEN
+			INSERT INTO tracker_orders_print (
+			  print_order_no,
+			  print_requisition_id,
+			  print_custom_requisition_id
+			)
+			VALUES(			
+			$1,
+			$2,
+			$3
+			) RETURNING order_id into id;
+		END IF;
+			
+		IF v_approve='Y' THEN
+			IF v_custom_requisition='N' THEN
+				UPDATE TRACKER_REQUISITION_PRINT SET approved='Y' WHERE print_requisition_id=v_print_requisition_id;
+				output_msg:='Successfully Updated';	
+			ELSIF v_custom_requisition='Y' THEN
+				UPDATE TRACKER_CUSTOM_REQUISITION_PRINT SET approved='Y' WHERE print_custom_requisition_id=v_print_custom_requisition_id;
+				output_msg:='Successfully Updated';	
+			END IF;
+		ELSIF v_approve='N' THEN
+			IF v_custom_requisition='N' THEN
+				UPDATE TRACKER_REQUISITION_PRINT SET approved='N' WHERE print_requisition_id=v_print_requisition_id;
+				output_msg:='Successfully Updated';	
+			ELSIF v_custom_requisition='Y' THEN
+				UPDATE TRACKER_CUSTOM_REQUISITION_PRINT SET approved='N' WHERE print_custom_requisition_id=v_print_custom_requisition_id;
+				output_msg:='Successfully Updated';	
+			END IF;
+		END IF;
+		
+END
+$BODY$
+  LANGUAGE plpgsql;
