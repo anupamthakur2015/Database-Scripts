@@ -1,0 +1,3 @@
+
+----- 5. SQL Query for Embroidery Order Delivery Sheet screen --------
+select * from VW_TRACKER_EMBROIDERY_ORDER_DELIVERY;
