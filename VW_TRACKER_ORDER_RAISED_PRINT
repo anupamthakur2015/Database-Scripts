@@ -1,0 +1,35 @@
+CREATE OR REPLACE VIEW VW_TRACKER_ORDER_RAISED_PRINT
+AS
+select 
+orders.order_id,
+print_order_no,
+orders.print_requisition_id,
+orders.print_custom_requisition_id,
+custom_requisition,
+issue_min_date,
+issue_max_date,
+transaction_id,
+delivery_min_date,
+delivery_max_date,
+category_name,
+style_code,
+designer_code,
+color_code,
+product_codes,
+item_code,
+production_types,
+print_code,
+printing_type,
+print_colour, 
+num_screens_blocks,
+num_colours,
+sample_reference,
+(case when custom_requisition='Y' then custom_requis.print_length else requis.print_length end) AS print_length,
+(case when custom_requisition='Y' then custom_requis.print_width else requis.print_width end) AS print_width,
+(case when custom_requisition='Y' then custom_requis.print_pcs else requis.print_pcs end) AS print_pcs,
+(case when custom_requisition='Y' then custom_requis.print_total_measurement else requis.print_total_measurement end) AS print_total_measurement
+FROM TRACKER_ORDERS_PRINT orders 
+LEFT JOIN TRACKER_REQUISITION_PRINT requis ON orders.print_requisition_id=requis.print_requisition_id AND requis.approved='Y'
+LEFT JOIN TRACKER_CUSTOM_REQUISITION_PRINT custom_requis ON orders.print_custom_requisition_id=custom_requis.print_custom_requisition_id AND custom_requis.approved='Y'
+WHERE 
+orders.issued IS NULL;
