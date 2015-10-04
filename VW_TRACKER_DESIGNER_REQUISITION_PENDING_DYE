@@ -1,0 +1,33 @@
+CREATE OR REPLACE VIEW VW_TRACKER_DESIGNER_REQUISITION_PENDING_DYE
+AS
+select 
+requis.dye_requisition_id,
+custom_requis.dye_custom_requisition_id,
+issue_min_date,
+issue_max_date,
+transaction_id,
+delivery_min_date,
+delivery_max_date,
+category_name,
+style_code,
+designer_code,
+color_code,
+product_codes,
+item_code,
+production_types,
+dye_code,
+fabric_code,
+fabric_name,
+fabric_type,
+sample_reference,
+custom_requisition,
+(case when custom_requisition='Y' then custom_requis.dye_length else requis.dye_length end) AS dye_length,
+(case when custom_requisition='Y' then custom_requis.dye_width else requis.dye_width end) AS dye_width,
+(case when custom_requisition='Y' then custom_requis.dye_pcs else requis.dye_pcs end) AS dye_pcs,
+(case when custom_requisition='Y' then custom_requis.dye_total_measurement else requis.dye_total_measurement end) AS dye_total_measurement
+FROM tracker_requisition_dye requis
+LEFT JOIN tracker_custom_requisition_dye custom_requis ON requis.dye_requisition_id=custom_requis.dye_requisition_id
+WHERE 
+(custom_requisition='N' and requis.approved='N')
+OR 
+(custom_requisition='Y' and custom_requis.approved='N');
