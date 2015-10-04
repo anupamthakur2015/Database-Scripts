@@ -1,0 +1,2 @@
+----- 3. SQL Query for Print Designer Requisition Pending Sheet screen --------
+select * from VW_TRACKER_DESIGNER_REQUISITION_PENDING_PRINT;
