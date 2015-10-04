@@ -1,0 +1,2 @@
+----- 7. SQL Query for Embroidery Order Received Delivery Confirmation Sheet screen --------
+select * from VW_TRACKER_EMBROIDERY_RECEIVED_DELIVERY_CONFIRMATION;
