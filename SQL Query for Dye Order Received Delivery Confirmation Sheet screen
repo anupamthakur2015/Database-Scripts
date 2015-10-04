@@ -1,0 +1,3 @@
+----- 7. SQL Query for Dye Order Received Delivery Confirmation Sheet screen --------
+select * from VW_TRACKER_DYE_RECEIVED_DELIVERY_CONFIRMATION;
+
