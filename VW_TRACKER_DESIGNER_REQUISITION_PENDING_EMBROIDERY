@@ -1,0 +1,38 @@
+CREATE OR REPLACE VIEW VW_TRACKER_DESIGNER_REQUISITION_PENDING_EMBROIDERY
+AS
+select 
+requis.embrd_requisition_id,
+custom_requis.embrd_custom_requisition_id,
+issue_min_date,
+issue_max_date,
+transaction_id,
+delivery_min_date,
+delivery_max_date,
+category_name,
+style_code,
+designer_code,
+color_code,
+product_codes,
+item_code,
+production_types,
+embrd_code,
+embrd_desc,
+embrd_std_unit,
+fabric_name,
+fabric_base_colour,
+material_reference,
+custom_requisition,
+(case when custom_requisition='Y' then custom_requis.embrd_total_metre else requis.embrd_total_metre end) AS embrd_total_metre,
+(case when custom_requisition='Y' then custom_requis.embrd_total_pcs else requis.embrd_total_pcs end) AS embrd_total_pcs,
+(case when custom_requisition='Y' then custom_requis.embrd_total_set else requis.embrd_total_set end) AS embrd_total_set,
+(case when custom_requisition='Y' then custom_requis.embrd_total_line else requis.embrd_total_line end) AS embrd_total_line,
+(case when custom_requisition='Y' then custom_requis.embrd_total_length_inch1 else requis.embrd_total_length_inch1 end) AS embrd_total_length_inch1,
+(case when custom_requisition='Y' then custom_requis.embrd_total_width_inch2 else requis.embrd_total_width_inch2 end) AS embrd_total_width_inch2,
+(case when custom_requisition='Y' then custom_requis.embrd_total_height_inch3 else requis.embrd_total_height_inch3 end) AS embrd_total_height_inch3,
+(case when custom_requisition='Y' then custom_requis.embrd_total_measurement else requis.embrd_total_measurement end) AS embrd_total_measurement
+FROM tracker_requisition_embroidery requis
+LEFT JOIN tracker_custom_requisition_embroidery custom_requis ON requis.embrd_requisition_id=custom_requis.embrd_requisition_id
+WHERE 
+(custom_requisition='N' and requis.approved='N')
+OR 
+(custom_requisition='Y' and custom_requis.approved='N');
