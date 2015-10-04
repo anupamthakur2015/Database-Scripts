@@ -1,0 +1,2 @@
+----- 2. Updated SQL Query for Dye Approval Sheet screen --------
+select * from VW_TRACKER_APPROVAL_PENDING_DYE;
