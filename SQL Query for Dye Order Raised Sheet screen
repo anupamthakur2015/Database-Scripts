@@ -1,0 +1,2 @@
+----- 4. Updated SQL Query for Dye Order Raised Sheet screen --------
+select * from VW_TRACKER_ORDER_RAISED_DYE;
