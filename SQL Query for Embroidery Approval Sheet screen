@@ -1,0 +1,2 @@
+----- 2. Updated SQL Query for Embroidery Approval Sheet screen --------
+select * from VW_TRACKER_APPROVAL_PENDING_EMBROIDERY;
