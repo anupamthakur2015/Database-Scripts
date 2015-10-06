@@ -1,0 +1,114 @@
+CREATE OR REPLACE VIEW VW_TRACKER_EMBROIDERY_ORDER_DELIVERY
+AS
+	SELECT 
+	*
+	FROM
+	( 
+		SELECT 
+		main_order.order_id,
+		embrd_order_no,
+		main_order.embrd_requisition_id,
+		  issue_min_date,
+		  issue_max_date,
+		  transaction_id,
+		  delivery_min_date,
+		  delivery_max_date,
+		  category_name,
+		  style_code,
+		  designer_code,
+		  color_code,
+		  product_codes,
+		  item_code,
+		  production_types,		 
+		  embrd_code,
+		  embrd_desc,
+		  embrd_std_unit,
+		  fabric_name,
+		  fabric_base_colour,
+		  material_reference,
+		(main_order.embrd_total_metre-COALESCE(received_embrd_total_metre,0)) AS embrd_total_metre,
+		(main_order.embrd_total_pcs-COALESCE(received_embrd_total_pcs,0)) AS embrd_total_pcs,
+		(main_order.embrd_total_set-COALESCE(received_embrd_total_set,0)) AS embrd_total_set,
+		(main_order.embrd_total_line-COALESCE(received_embrd_total_line,0)) AS embrd_total_line,
+		(main_order.embrd_total_length_inch1-COALESCE(received_embrd_total_length_inch1,0)) AS embrd_total_length_inch1,
+		(main_order.embrd_total_width_inch2-COALESCE(received_embrd_total_width_inch2,0)) AS embrd_total_width_inch2,
+		(main_order.embrd_total_height_inch3-COALESCE(received_embrd_total_height_inch3,0)) AS embrd_total_height_inch3,
+		(main_order.embrd_total_measurement-COALESCE(received_embrd_total_measurement,0)) AS embrd_total_measurement		
+	FROM
+	(select 
+		order_id,
+		embrd_order_no,
+		orders.embrd_requisition_id,
+		issue_min_date,
+		  issue_max_date,
+		  transaction_id,
+		  delivery_min_date,
+		  delivery_max_date,
+		  category_name,
+		  style_code,
+		  designer_code,
+		  color_code,
+		  product_codes,
+		  item_code,
+		  production_types,	
+		  embrd_code,
+		  embrd_desc,
+		  embrd_std_unit,
+		  fabric_name,
+		  fabric_base_colour,
+		  (CASE WHEN custom_requisition='Y' AND custom_requis.approved='Y'  THEN custom_requis.embrd_total_metre else requis.embrd_total_metre end) AS embrd_total_metre,
+		  (CASE WHEN custom_requisition='Y' AND custom_requis.approved='Y'  THEN custom_requis.embrd_total_pcs else requis.embrd_total_pcs end) AS embrd_total_pcs,
+		  (CASE WHEN custom_requisition='Y' AND custom_requis.approved='Y'  THEN custom_requis.embrd_total_set else requis.embrd_total_set end) AS embrd_total_set,
+		  (CASE WHEN custom_requisition='Y' AND custom_requis.approved='Y'  THEN custom_requis.embrd_total_line else requis.embrd_total_line end) AS embrd_total_line,
+		  (CASE WHEN custom_requisition='Y' AND custom_requis.approved='Y'  THEN custom_requis.embrd_total_length_inch1 else requis.embrd_total_length_inch1 end) AS embrd_total_length_inch1,
+		  (CASE WHEN custom_requisition='Y' AND custom_requis.approved='Y'  THEN custom_requis.embrd_total_width_inch2 else requis.embrd_total_width_inch2 end) AS embrd_total_width_inch2,
+		  (CASE WHEN custom_requisition='Y' AND custom_requis.approved='Y'  THEN custom_requis.embrd_total_height_inch3 else requis.embrd_total_height_inch3 end) AS embrd_total_height_inch3,
+		  (CASE WHEN custom_requisition='Y' AND custom_requis.approved='Y'  THEN custom_requis.embrd_total_measurement else requis.embrd_total_measurement end) AS embrd_total_measurement,
+		  material_reference
+		from TRACKER_ORDERS_EMBROIDERY orders 
+		JOIN TRACKER_REQUISITION_EMBROIDERY requis ON orders.embrd_requisition_id=requis.embrd_requisition_id 
+		LEFT JOIN TRACKER_CUSTOM_REQUISITION_EMBROIDERY custom_requis 
+			ON custom_requis.embrd_requisition_id = requis.embrd_requisition_id AND 
+				custom_requis.embrd_custom_requisition_id=orders.embrd_custom_requisition_id
+		WHERE orders.issued='Y' and delivered IS NULL
+	) main_order
+	LEFT JOIN
+	(
+
+		select 
+		rcvd_orders.order_id,
+		sum(embrd_total_metre) AS received_embrd_total_metre,
+		sum(embrd_total_pcs) AS received_embrd_total_pcs,
+		sum(embrd_total_set) AS received_embrd_total_set,
+		sum(embrd_total_line) AS received_embrd_total_line,
+		sum(embrd_total_length_inch1) received_embrd_total_length_inch1,
+		sum(embr_total_width_inch2) received_embrd_total_width_inch2,
+		sum(embrd_total_height_inch3) received_embrd_total_height_inch3,
+		sum(embrd_total_measurement) AS received_embrd_total_measurement
+		from 
+		TRACKER_CUSTOM_RECEIVED_ORDERS_EMBROIDERY rcvd_orders, 
+		TRACKER_ORDERS_EMBROIDERY orders 
+		where rcvd_orders.order_id=orders.order_id and orders.delivered IS NULL
+		group by rcvd_orders.order_id
+	) received_orders
+		ON received_orders.order_id=main_order.order_id
+	) sub
+	WHERE 	
+	(
+		(
+			embrd_total_metre<>0 OR
+			embrd_total_line<>0  OR
+			embrd_total_length_inch1<>0
+		)
+		OR
+		(
+			embrd_total_pcs<>0  OR
+			embrd_total_width_inch2<>0
+		)
+		OR
+		(
+			embrd_total_set<>0  OR
+			embrd_total_height_inch3<>0
+		)
+	) AND
+	embrd_total_measurement<>0;
