@@ -1,0 +1,14 @@
+CREATE OR REPLACE FUNCTION func_tracker_save_order_issue_print(
+    IN arr_order_id integer[],
+    OUT output_msg text,
+    OUT id integer)
+  RETURNS record AS
+$BODY$
+BEGIN   
+					
+	UPDATE tracker_orders_print SET issued='Y', issued_date=current_timestamp
+	 WHERE order_id IN(select UNNEST(arr_order_id::integer[]));
+
+END
+$BODY$
+  LANGUAGE plpgsql;
