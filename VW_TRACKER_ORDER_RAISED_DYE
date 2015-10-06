@@ -1,0 +1,33 @@
+CREATE OR REPLACE VIEW VW_TRACKER_ORDER_RAISED_DYE
+AS
+select 
+orders.order_id,
+dye_order_no,
+orders.dye_requisition_id,
+orders.dye_custom_requisition_id,
+custom_requisition,
+issue_min_date,
+issue_max_date,
+transaction_id,
+delivery_min_date,
+delivery_max_date,
+category_name,
+style_code,
+designer_code,
+color_code,
+product_codes,
+item_code,
+production_types,
+dye_code,
+fabric_code,
+fabric_name, 
+fabric_type,
+sample_reference,
+(case when custom_requisition='Y' then custom_requis.dye_length else requis.dye_length end) AS dye_length,
+(case when custom_requisition='Y' then custom_requis.dye_width else requis.dye_width end) AS dye_width,
+(case when custom_requisition='Y' then custom_requis.dye_pcs else requis.dye_pcs end) AS dye_pcs,
+(case when custom_requisition='Y' then custom_requis.dye_total_measurement else requis.dye_total_measurement end) AS dye_total_measurement
+FROM TRACKER_ORDERS_DYE orders 
+LEFT JOIN TRACKER_REQUISITION_DYE requis ON orders.dye_requisition_id=requis.dye_requisition_id
+LEFT JOIN TRACKER_CUSTOM_REQUISITION_DYE custom_requis ON orders.dye_custom_requisition_id=custom_requis.dye_custom_requisition_id AND custom_requis.approved='Y'
+ WHERE (requis.approved='Y' OR custom_requis.approved='Y') AND orders.issued IS NULL;
