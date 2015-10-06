@@ -1,0 +1,84 @@
+CREATE OR REPLACE VIEW VW_TRACKER_DYE_ORDER_DELIVERY
+AS
+SELECT 
+*
+FROM
+( 
+	SELECT 
+		main_order.order_id,
+		dye_order_no,
+		main_order.dye_requisition_id,
+		issue_min_date,
+		issue_max_date,
+		transaction_id,
+		delivery_min_date,
+		delivery_max_date,
+		category_name,
+		style_code,
+		designer_code,
+		color_code,
+		product_codes,
+		item_code,
+		production_types,
+		dye_code,
+		fabric_code,
+		fabric_name,
+		fabric_type, 
+		sample_reference,
+		(main_order.dye_length-COALESCE(received_length,0)) AS dye_length,
+		(main_order.dye_width-COALESCE(received_width,0)) AS dye_width,
+		(main_order.dye_pcs-COALESCE(received_pcs,0)) AS dye_pcs,
+		(main_order.dye_total_measurement-COALESCE(received_total_measurement,0)) AS dye_total_measurement
+		
+	FROM
+	(
+		select 
+		order_id,
+		dye_order_no,
+		orders.dye_requisition_id,
+		issue_min_date,
+		issue_max_date,
+		transaction_id,
+		delivery_min_date,
+		delivery_max_date,
+		category_name,
+		style_code,
+		designer_code,
+		color_code,
+		product_codes,
+		item_code,
+		production_types,
+		dye_code,
+		fabric_code,
+		fabric_name,
+		fabric_type,
+		(CASE WHEN custom_requisition='Y' AND custom_requis.approved='Y'  THEN custom_requis.dye_length else requis.dye_length end) AS dye_length,
+		(CASE WHEN custom_requisition='Y' AND custom_requis.approved='Y' THEN custom_requis.dye_width else requis.dye_width end) AS dye_width,
+		(CASE WHEN custom_requisition='Y' AND custom_requis.approved='Y' THEN custom_requis.dye_pcs else requis.dye_pcs end) AS dye_pcs,
+		(CASE WHEN custom_requisition='Y' AND custom_requis.approved='Y' THEN custom_requis.dye_total_measurement else requis.dye_total_measurement end) AS dye_total_measurement,
+		sample_reference
+		from TRACKER_ORDERS_DYE orders 
+		JOIN TRACKER_REQUISITION_DYE requis ON orders.dye_requisition_id=requis.dye_requisition_id 
+		 LEFT JOIN TRACKER_CUSTOM_REQUISITION_DYE custom_requis 
+			ON custom_requis.dye_requisition_id = requis.dye_requisition_id AND 
+				custom_requis.dye_custom_requisition_id=orders.dye_custom_requisition_id
+		WHERE orders.issued='Y' and delivered IS NULL
+	) main_order
+	LEFT JOIN
+	(
+		select 
+		rcvd_orders.order_id,
+		sum(dye_length) as received_length,
+		sum(dye_width) as received_width,
+		sum(dye_pcs) as received_pcs,
+		sum(dye_total_measurement) as received_total_measurement
+		from 
+		TRACKER_CUSTOM_RECEIVED_ORDERS_DYE rcvd_orders, 
+		TRACKER_ORDERS_DYE orders 
+		where rcvd_orders.order_id=orders.order_id and orders.delivered IS NULL
+		group by rcvd_orders.order_id
+
+	) received_orders
+	ON received_orders.order_id=main_order.order_id
+) sub
+WHERE ((dye_length<>0) OR (dye_width<>0) OR (dye_pcs<>0)) AND (dye_total_measurement<>0);
