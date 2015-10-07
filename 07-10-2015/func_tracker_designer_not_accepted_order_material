@@ -1,0 +1,36 @@
+CREATE OR REPLACE FUNCTION func_tracker_designer_not_accepted_order_material(
+    IN v_order_id integer,
+    IN v_custom_order_id integer,
+    IN v_customized character,
+    IN v_not_accepted character,
+    IN v_reason text,
+    OUT output_msg text,
+    OUT id integer)
+  RETURNS record AS
+$BODY$
+BEGIN  
+                          IF v_customized='Y' THEN 
+                                IF    v_not_accepted='RJ' THEN                   
+					UPDATE tracker_custom_orders_material SET designer_rejected='Y', designer_not_accepted_date=current_timestamp, designer_not_accepted_reason=v_reason
+					WHERE material_custom_order_id =v_custom_order_id;
+				ELSIF v_not_accepted='RT' THEN
+					UPDATE tracker_custom_orders_material SET designer_returned='Y', designer_not_accepted_date=current_timestamp, designer_not_accepted_reason=v_reason
+					WHERE material_custom_order_id =v_custom_order_id;	
+				output_msg:='Successfully';
+				END IF;
+			ELSE
+				IF    v_not_accepted='RJ' THEN
+					UPDATE tracker_orders_material SET designer_rejected='Y', designer_not_accepted_date=current_timestamp, designer_not_accepted_reason=v_reason
+					WHERE order_id =v_order_id;
+				ELSIF v_not_accepted='RT' THEN
+					UPDATE tracker_orders_material SET designer_returned='Y', designer_not_accepted_date=current_timestamp, designer_not_accepted_reason=v_reason
+					WHERE order_id =v_order_id;
+				output_msg:='Successfully';
+				END IF;
+			END IF;
+ 
+ 
+               
+END
+$BODY$
+  LANGUAGE plpgsql;
