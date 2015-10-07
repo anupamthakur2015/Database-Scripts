@@ -1,0 +1,107 @@
+DROP VIEW VW_TRACKER_REQUISITION_DYE;
+CREATE OR REPLACE VIEW VW_TRACKER_REQUISITION_DYE
+AS
+SELECT * 
+FROM 
+(
+	select 
+	category_planning_id, 
+	product_codes, 
+	production_type, 
+	plan_item_code, 
+	vw_req_dye.transaction_id, 
+	category_name, 
+	style_code, 
+	color_code, 
+	DYE_code, 
+	fabric_name, 
+	fabric_type, 
+	Issue_Min_Date,
+	Issue_Max_Date,
+	Delivery_Min_Date,
+	Delivery_Max_Date,
+	(DYE_Total_Length_Metre - COALESCE(dye_length,0)) AS DYE_Total_Length_Metre,
+	(DYE_Total_Width_Inch - COALESCE(dye_width,0)) AS DYE_Total_Width_Inch,
+	(DYE_Total_Pcs - COALESCE(dye_pcs,0)) AS DYE_Total_Pcs,
+	(vw_req_dye.DYE_Total_Measurement - COALESCE(req_dye.dye_total_measurement,0)) AS DYE_Total_Measurement,
+	sc_planning_main_item_id, style_ccode_id, sc_asis_plan_DYE_item_id, cat_custom_plan_DYE_item_id,sc_custom_dept_plan_DYE_item_id,
+	custom, cat_custom_dept_changed,asis_dept_changed
+	from 
+	(
+		select  category_planning_id, product_codes, production_type, plan_item_code, transaction_id, category_name, style_code, color_code, DYE_code, fabric_name, fabric_type, 
+		(CASE 
+		WHEN custom='N' THEN DYE_issue_min_date 
+		WHEN custom='Y' AND cat_custom_dept_changed='N' THEN cat_custom_DYE_issue_min_date
+		WHEN custom='Y' AND asis_dept_changed='Y' THEN dept_custom_DYE_issue_min_date
+		END) AS Issue_Min_Date,
+		(CASE 
+		WHEN custom='N' THEN DYE_issue_max_date 
+		WHEN custom='Y' AND cat_custom_dept_changed='N' THEN cat_custom_DYE_issue_max_date
+		WHEN custom='Y' AND asis_dept_changed='Y' THEN dept_custom_DYE_issue_max_date
+		END) AS Issue_Max_Date,
+		(CASE 
+		WHEN custom='N' THEN DYE_delivery_min_date 
+		WHEN custom='Y' AND cat_custom_dept_changed='N' THEN cat_custom_DYE_delivery_min_date
+		WHEN custom='Y' AND asis_dept_changed='Y' THEN dept_custom_DYE_delivery_min_date
+		END) AS Delivery_Min_Date,
+		(CASE 
+		WHEN custom='N' THEN DYE_delivery_max_date 
+		WHEN custom='Y' AND cat_custom_dept_changed='N' THEN cat_custom_DYE_delivery_max_date
+		WHEN custom='Y' AND asis_dept_changed='Y' THEN dept_custom_DYE_delivery_max_date
+		END) AS Delivery_Max_Date,
+		(CASE 
+		WHEN custom='N' THEN asis_DYE_total_length_metre 
+		WHEN custom='Y' AND cat_custom_dept_changed='N' THEN cat_custom_DYE_total_length_metre
+		WHEN custom='Y' AND asis_dept_changed='Y' THEN dept_custom_DYE_total_length_metre
+		END) AS DYE_Total_Length_Metre,
+		(CASE 
+		WHEN custom='N' THEN asis_DYE_total_width_inch 
+		WHEN custom='Y' AND cat_custom_dept_changed='N' THEN cat_custom_DYE_total_width_inch
+		WHEN custom='Y' AND asis_dept_changed='Y' THEN dept_custom_DYE_total_width_inch
+		END) AS DYE_Total_Width_Inch,
+		(CASE 
+		WHEN custom='N' THEN asis_DYE_total_pcs 
+		WHEN custom='Y' AND cat_custom_dept_changed='N' THEN cat_custom_DYE_total_pcs
+		WHEN custom='Y' AND asis_dept_changed='Y' THEN dept_custom_DYE_total_pcs
+		END) AS DYE_Total_Pcs,
+		(CASE 
+		WHEN custom='N' THEN asis_DYE_total_measurement 
+		WHEN custom='Y' AND cat_custom_dept_changed='N' THEN cat_custom_DYE_total_measurement
+		WHEN custom='Y' AND asis_dept_changed='Y' THEN dept_custom_DYE_total_measurement
+		END) AS DYE_Total_Measurement,
+		sc_planning_main_item_id, style_ccode_id, sc_asis_plan_DYE_item_id, cat_custom_plan_DYE_item_id,sc_custom_dept_plan_DYE_item_id,
+		custom, cat_custom_dept_changed,asis_dept_changed
+		 from 
+		(
+			select 
+			cat.*,
+			sc_custom_dept_plan_DYE_item_id,
+			dept_custom_DYE_total_length_metre,
+			dept_custom_DYE_total_width_inch,	
+			dept_custom_DYE_total_pcs,
+			dept_custom_DYE_total_measurement,
+			dept_custom_DYE_issue_min_date,
+			dept_custom_DYE_issue_max_date,
+			dept_custom_DYE_delivery_min_date,
+			dept_custom_DYE_delivery_max_date 
+			from vw_notification_asis_cat_custom_DYE cat
+			 LEFT JOIN vw_notification_asis_dept_custom_DYE dept 
+			ON cat.transaction_id=dept.transaction_id 
+			AND cat.cat_custom_plan_DYE_item_id=dept.sc_custom_plan_DYE_item_id
+		) vw_notification_DYE 
+		order by category_planning_id
+) vw_req_dye
+	LEFT JOIN 
+	(
+	select transaction_id,
+	sum(custom_requis.dye_length) AS dye_length,
+	sum(custom_requis.dye_width) AS dye_width,
+	sum(custom_requis.dye_pcs) AS dye_pcs,
+	sum(custom_requis.dye_total_measurement) AS dye_total_measurement
+	FROM 
+	tracker_custom_requisition_dye custom_requis, 
+	tracker_requisition_dye requis
+	where custom_requis.dye_requisition_id=requis.dye_requisition_id
+	group by transaction_id
+	) req_dye ON req_dye.transaction_id=vw_req_dye.transaction_id
+) sub WHERE (DYE_Total_Length_Metre<>0 OR DYE_Total_Width_Inch<>0 OR DYE_Total_Pcs<>0) AND DYE_Total_Measurement<>0;
