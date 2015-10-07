@@ -1,0 +1,23 @@
+CREATE OR REPLACE FUNCTION func_tracker_designer_receive_order_dye(
+    IN v_order_id integer,
+    IN v_dye_custom_order_id integer,
+    OUT output_msg text,
+    OUT id integer)
+  RETURNS record AS
+$BODY$
+BEGIN  
+                                                               
+		UPDATE tracker_custom_received_orders_dye 
+		SET 
+		designer_received='Y', 
+		designer_received_date=current_timestamp
+		WHERE dye_custom_order_id =v_dye_custom_order_id;
+		output_msg:='Successfully';
+
+               
+END
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+ALTER FUNCTION func_tracker_designer_receive_order_dye(integer, integer)
+  OWNER TO postgres;
