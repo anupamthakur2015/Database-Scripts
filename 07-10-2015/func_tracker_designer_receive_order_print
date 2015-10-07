@@ -1,0 +1,20 @@
+CREATE OR REPLACE FUNCTION func_tracker_designer_receive_order_print(
+    IN v_order_id integer,
+    IN v_print_custom_order_id integer,
+    OUT output_msg text,
+    OUT id integer)
+  RETURNS record AS
+$BODY$
+BEGIN  
+                                                               
+		UPDATE tracker_custom_received_orders_print 
+		SET 
+		designer_received='Y', 
+		designer_received_date=current_timestamp
+		WHERE print_custom_order_id =v_print_custom_order_id;
+		output_msg:='Successfully';
+
+               
+END
+$BODY$
+  LANGUAGE plpgsql;
