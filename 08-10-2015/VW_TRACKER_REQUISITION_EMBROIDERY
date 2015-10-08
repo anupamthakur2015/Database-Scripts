@@ -1,0 +1,163 @@
+DROP VIEW VW_TRACKER_REQUISITION_EMBROIDERY;
+CREATE OR REPLACE VIEW VW_TRACKER_REQUISITION_EMBROIDERY
+AS
+SELECT * 
+FROM 
+(
+	select 
+	category_planning_id, 
+	product_codes, 
+	production_type, 
+	plan_item_code, 
+	vw_req_embrd.transaction_id, 
+	category_name, 
+	style_code, 
+	color_code, 
+	embroidery_code AS embrd_code, 
+	embroidery_description AS embrd_desc,
+	embrd_std_unit,
+	fabric_name,
+	fabric_base_colour,
+	material_reference,
+	Issue_Min_Date,
+	Issue_Max_Date,
+	Delivery_Min_Date,
+	Delivery_Max_Date,
+	(embroidery_total_metre - COALESCE(embrd_total_metre,0)) AS embroidery_total_metre,
+	(embroidery_Total_Pcs - COALESCE(embrd_total_pcs,0)) AS embroidery_Total_Pcs,
+	(embroidery_Total_set - COALESCE(embrd_total_set,0)) AS embroidery_Total_set,
+	(embroidery_total_line - COALESCE(embrd_total_line,0)) AS embroidery_total_line,
+	(embroidery_total_length_inch1 - COALESCE(embrd_total_length_inch1,0)) AS embroidery_total_length_inch1,
+	(embroidery_total_width_inch2 - COALESCE(embrd_total_width_inch2,0)) AS embroidery_total_width_inch2,
+	(embroidery_total_height_inch3 - COALESCE(embrd_total_height_inch3,0)) AS embroidery_total_height_inch3,
+	(vw_req_embrd.embroidery_Total_Measurement - COALESCE(req_embrd.embrd_total_measurement,0)) AS embroidery_Total_Measurement,
+	sc_planning_main_item_id, style_ccode_id, sc_asis_plan_EMBRD_item_id, cat_custom_plan_EMBRD_item_id,sc_custom_dept_plan_EMRD_item_id,
+	custom, cat_custom_dept_changed,asis_dept_changed
+	from 
+	(
+		select  category_planning_id, product_codes, production_type, plan_item_code, transaction_id, category_name, style_code, color_code, 
+		embroidery_code, embroidery_description, embrd_std_unit, 
+		fabric_code,fabric_name, fabric_base_colour,material_reference,
+		(CASE 
+		WHEN custom='N' THEN embroidery_issue_min_date 
+		WHEN custom='Y' AND cat_custom_dept_changed='N' THEN cat_custom_embrd_issue_min_date
+		WHEN custom='Y' AND asis_dept_changed='Y' THEN dept_custom_embrd_issue_min_date
+		END) AS Issue_Min_Date,
+		(CASE 
+		WHEN custom='N' THEN embroidery_issue_max_date 
+		WHEN custom='Y' AND cat_custom_dept_changed='N' THEN cat_custom_embrd_issue_max_date
+		WHEN custom='Y' AND asis_dept_changed='Y' THEN dept_custom_embrd_issue_max_date
+		END) AS Issue_Max_Date,
+		(CASE 
+		WHEN custom='N' THEN embroidery_delivery_min_date 
+		WHEN custom='Y' AND cat_custom_dept_changed='N' THEN cat_custom_embrd_delivery_min_date
+		WHEN custom='Y' AND asis_dept_changed='Y' THEN dept_custom_embrd_delivery_min_date
+		END) AS Delivery_Min_Date,
+		(CASE 
+		WHEN custom='N' THEN embroidery_delivery_max_date 
+		WHEN custom='Y' AND cat_custom_dept_changed='N' THEN cat_custom_embrd_delivery_max_date
+		WHEN custom='Y' AND asis_dept_changed='Y' THEN dept_custom_embrd_delivery_max_date
+		END) AS Delivery_Max_Date,
+		(CASE 
+		WHEN custom='N' THEN asis_embroidery_total_metre 
+		WHEN custom='Y' AND cat_custom_dept_changed='N' THEN cat_custom_embrd_total_metre
+		WHEN custom='Y' AND asis_dept_changed='Y' THEN dept_custom_embrd_total_metre
+		END) AS embroidery_total_metre,
+		(CASE 
+		WHEN custom='N' THEN asis_embroidery_total_pcs 
+		WHEN custom='Y' AND cat_custom_dept_changed='N' THEN cat_custom_embrd_total_pcs
+		WHEN custom='Y' AND asis_dept_changed='Y' THEN dept_custom_embrd_total_pcs
+		END) AS embroidery_Total_Pcs,
+		(CASE 
+		WHEN custom='N' THEN asis_embroidery_total_set 
+		WHEN custom='Y' AND cat_custom_dept_changed='N' THEN cat_custom_embrd_total_set
+		WHEN custom='Y' AND asis_dept_changed='Y' THEN dept_custom_embrd_total_set
+		END) AS embroidery_Total_set,
+		(CASE 
+		WHEN custom='N' THEN asis_embroidery_total_line 
+		WHEN custom='Y' AND cat_custom_dept_changed='N' THEN cat_custom_embrd_total_line
+		WHEN custom='Y' AND asis_dept_changed='Y' THEN dept_custom_embrd_total_line
+		END) AS embroidery_total_line,
+		(CASE 
+		WHEN custom='N' THEN asis_embroidery_total_length_inch1 
+		WHEN custom='Y' AND cat_custom_dept_changed='N' THEN cat_custom_embrd_total_length_inch1
+		WHEN custom='Y' AND asis_dept_changed='Y' THEN dept_custom_embrd_total_length_inch1
+		END) AS embroidery_total_length_inch1,
+		(CASE 
+		WHEN custom='N' THEN asis_embroidery_total_width_inch2 
+		WHEN custom='Y' AND cat_custom_dept_changed='N' THEN cat_custom_embrd_total_width_inch2
+		WHEN custom='Y' AND asis_dept_changed='Y' THEN dept_custom_embrd_total_width_inch2
+		END) AS embroidery_total_width_inch2,
+		(CASE 
+		WHEN custom='N' THEN asis_embroidery_total_height_inch3
+		WHEN custom='Y' AND cat_custom_dept_changed='N' THEN cat_custom_embrd_total_height_inch3
+		WHEN custom='Y' AND asis_dept_changed='Y' THEN dept_custom_embrd_total_height_inch3
+		END) AS embroidery_total_height_inch3,
+		(CASE 
+		WHEN custom='N' THEN asis_embroidery_total_measurement 
+		WHEN custom='Y' AND cat_custom_dept_changed='N' THEN cat_custom_embrd_total_measurement
+		WHEN custom='Y' AND asis_dept_changed='Y' THEN dept_custom_embrd_total_measurement
+		END) AS embroidery_Total_Measurement,
+		sc_planning_main_item_id, style_ccode_id, sc_asis_plan_embrd_item_id, cat_custom_plan_embrd_item_id,sc_custom_dept_plan_emrd_item_id,
+		custom, cat_custom_dept_changed,asis_dept_changed
+		 from 
+		(
+			select 
+			cat.*,
+			sc_custom_dept_plan_emrd_item_id,
+			dept_custom_embrd_total_metre,
+			dept_custom_embrd_total_pcs,
+			dept_custom_embrd_total_set,
+			dept_custom_embrd_total_line,
+			dept_custom_embrd_total_length_inch1,
+			dept_custom_embrd_total_width_inch2,
+			dept_custom_embrd_total_height_inch3,
+			dept_custom_embrd_total_measurement,
+			dept_custom_embrd_issue_min_date,
+			dept_custom_embrd_issue_max_date,
+			dept_custom_embrd_delivery_min_date,
+			dept_custom_embrd_delivery_max_date
+			from vw_notification_asis_cat_custom_embroidery cat
+			 LEFT JOIN vw_notification_asis_dept_custom_embroidery dept 
+			ON cat.transaction_id=dept.transaction_id 
+			AND cat.cat_custom_plan_embrd_item_id=dept.sc_custom_plan_embd_item_id
+		) vw_notification_embroidery 
+		order by category_planning_id
+) vw_req_embrd
+	LEFT JOIN 
+	(
+	select transaction_id,
+	sum(custom_requis.embrd_total_metre) AS embrd_total_metre,
+	sum(custom_requis.embrd_total_pcs) AS embrd_total_pcs,
+	sum(custom_requis.embrd_total_set) AS embrd_total_set,
+	sum(custom_requis.embrd_total_line) AS embrd_total_line,
+	sum(custom_requis.embrd_total_length_inch1) AS embrd_total_length_inch1,
+	sum(custom_requis.embrd_total_width_inch2) AS embrd_total_width_inch2,
+	sum(custom_requis.embrd_total_height_inch3) AS embrd_total_height_inch3,
+	sum(custom_requis.embrd_total_measurement) AS embrd_total_measurement
+	FROM 
+	tracker_custom_requisition_embroidery custom_requis, 
+	tracker_requisition_embroidery requis
+	where custom_requis.embrd_requisition_id=requis.embrd_requisition_id
+	group by transaction_id
+	) req_embrd ON req_embrd.transaction_id=req_embrd.transaction_id
+) sub 
+WHERE 
+(
+		(
+			embroidery_total_metre<>0 OR
+			embroidery_total_line<>0  OR
+			embroidery_total_length_inch1<>0
+		)
+		OR
+		(
+			embroidery_total_pcs<>0  OR
+			embroidery_total_width_inch2<>0
+		)
+		OR
+		(
+			embroidery_total_set<>0  OR
+			embroidery_total_height_inch3<>0
+		)
+	) AND
+	embroidery_total_measurement<>0;
