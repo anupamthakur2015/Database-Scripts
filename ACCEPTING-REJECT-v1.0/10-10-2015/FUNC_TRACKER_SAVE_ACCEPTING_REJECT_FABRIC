@@ -1,0 +1,107 @@
+CREATE OR REPLACE FUNCTION FUNC_TRACKER_SAVE_ACCEPTING_REJECT_FABRIC(
+	IN v_fabric_requisition_id integer,
+	IN v_fabric_order_no varchar(500),
+	IN v_old_transaction_id varchar(100),
+	IN v_new_transaction_id varchar(100),
+	IN v_fabric_code varchar(20),
+	IN v_style_ccode_id integer,
+	IN v_item_code varchar(50),
+	IN v_product_code varchar(200),
+	IN v_cross_reference_personal text,	
+	IN v_fabric_length float,
+	IN v_fabric_width float,
+	IN v_fabric_pcs integer,
+	IN v_fabric_shrinkage integer,
+	IN v_fabric_total_measurement float,
+	IN v_fabric_total_amount float,	
+	IN v_custom_accept char(1) DEFAULT NULL,
+    IN v_custom_fabric_length float[] DEFAULT NULL::float[],
+    IN v_custom_fabric_width float[] DEFAULT NULL::float[],
+    IN v_custom_fabric_pcs integer[] DEFAULT NULL::integer[],
+    IN v_custom_fabric_shrinkage integer[] DEFAULT NULL::float[],
+    IN v_custom_fabric_total_measurement float[] DEFAULT NULL::float[],
+    IN v_custom_fabric_total_amount float[] DEFAULT NULL::float[],
+    OUT output_msg text,
+    OUT id integer)
+  RETURNS record AS
+$BODY$
+
+DECLARE
+pmid integer;
+BEGIN   
+					
+		INSERT INTO ACCEPTING_REJECT_FABRIC (
+			fabric_requisition_id,
+			fabric_order_no,
+			old_transaction_id,
+			new_transaction_id,
+			fabric_code,
+			style_ccode_id,
+			item_code,
+			product_code,
+			cross_reference_personal,
+			acceptance_date
+		)
+		VALUES(			
+		$1,
+		$2,
+		$3,
+		$4,
+		$5,
+		$6,
+		$7,
+		$8,
+		$9,
+		current_timestamp
+		) RETURNING accepting_reject_fabric_id into id;
+		output_msg:='Successfully inserted';
+
+
+		INSERT INTO ACCEPTING_REJECT_MEASUREMENTS_FABRIC(
+			accepting_reject_fabric_id,
+			  ar_fabric_length,
+			  ar_fabric_width,
+			  ar_fabric_pcs,
+			  ar_fabric_shrinkage,
+			  ar_fabric_total_measurement,
+			  ar_fabric_total_amount
+			) 		
+			select 
+			id,
+			v_fabric_length,
+			v_fabric_width,
+			v_fabric_pcs,
+			v_fabric_shrinkage,
+			v_fabric_total_measurement,
+			v_fabric_total_amount
+			RETURNING ar_fabric_measurement_id into pmid;
+
+		IF v_custom_accept='Y' THEN	
+				
+		    INSERT INTO ACCEPTING_REJECT_MEASUREMENTS_FABRIC(
+			accepting_reject_fabric_id,
+			  ar_fabric_length,
+			  ar_fabric_width,
+			  ar_fabric_pcs,
+			  ar_fabric_shrinkage,
+			  ar_fabric_total_measurement,
+			  ar_fabric_total_amount,
+			  parent_measurement_id
+			) 		
+			select 
+			id,
+			UNNEST(v_custom_fabric_length::float[]),
+			UNNEST(v_custom_fabric_width::float[]),
+			UNNEST(v_custom_fabric_pcs::integer[]),
+			UNNEST(v_custom_fabric_shrinkage::float[]),
+			UNNEST(v_custom_fabric_total_measurement::float[]),
+			UNNEST(v_custom_fabric_total_amount::float[]),
+			pmid
+			;
+			
+
+		END IF;		
+	
+END
+$BODY$
+  LANGUAGE plpgsql;
