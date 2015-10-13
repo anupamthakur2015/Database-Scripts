@@ -1,0 +1,4 @@
+CREATE OR REPLACE VIEW VW_ACCEPTING_REJECT_FABRIC					-------------------------- NEW VERSION
+AS 
+SELECT * FROM VW_ACCEPTING_REJECT_DETAILS_FABRIC
+WHERE issued= 'Y' AND  delivered= 'Y' AND designer_received IS NULL AND designer_rejected='Y'
