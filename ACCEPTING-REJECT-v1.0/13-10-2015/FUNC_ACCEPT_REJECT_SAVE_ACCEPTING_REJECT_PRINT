@@ -1,0 +1,72 @@
+CREATE OR REPLACE FUNCTION FUNC_ACCEPT_REJECT_SAVE_ACCEPTING_REJECT_PRINT(
+	IN arr_print_requisition_id integer[],
+	IN arr_print_order_no varchar[],
+	IN arr_old_transaction_id varchar[],
+	IN arr_new_transaction_id varchar[],
+	IN arr_print_code varchar[],
+	IN arr_style_ccode_id integer[],
+	IN arr_item_code varchar[],
+	IN arr_product_code varchar[],
+	IN arr_cross_reference_personal text[],	
+	IN arr_print_length float[],
+	IN arr_print_width float[],
+	IN arr_print_pcs integer[],	
+	IN arr_print_total_measurement float[],
+	IN arr_print_total_amount float[],	
+	IN v_recycled char(1),	     
+    OUT output_msg text,
+    OUT id integer)
+  RETURNS record AS
+$BODY$
+
+DECLARE
+pmid integer;
+BEGIN   
+					
+		INSERT INTO ACCEPTING_REJECT_PRINT (
+			print_requisition_id,
+			print_order_no,
+			old_transaction_id,
+			new_transaction_id,
+			print_code,
+			style_ccode_id,
+			item_code,
+			product_code,
+			cross_reference_personal,
+			acceptance_date,
+			ar_print_length,
+			ar_print_width,
+			ar_print_pcs,			
+			ar_print_total_measurement,
+			ar_print_total_amount,
+			recycled,
+			recycled_date
+		)
+		select 
+			UNNEST(arr_print_requisition_id::integer[]),
+			UNNEST(arr_print_order_no::varchar[]),
+			UNNEST(arr_old_transaction_id::varchar[]),
+			UNNEST(arr_new_transaction_id::varchar[]),
+			UNNEST(arr_print_code::varchar[]),
+			UNNEST(arr_style_ccode_id::integer[]),
+			UNNEST(arr_item_code::varchar[]),
+			UNNEST(arr_product_code::varchar[]),
+			UNNEST(arr_cross_reference_personal::text[]),
+			CURRENT_TIMESTAMP,
+			UNNEST(arr_print_length::float[]),
+			UNNEST(arr_print_width::float[]),
+			UNNEST(arr_print_pcs::integer[]),			
+			UNNEST(arr_print_total_measurement::float[]),
+			UNNEST(arr_print_total_amount::float[]),
+			v_recycled,
+			current_timestamp
+		;
+
+
+		output_msg:='Successfully inserted';
+
+
+	
+END
+$BODY$
+  LANGUAGE plpgsql;
