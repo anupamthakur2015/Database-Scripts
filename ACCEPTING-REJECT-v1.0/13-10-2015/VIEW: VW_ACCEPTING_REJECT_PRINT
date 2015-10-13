@@ -1,0 +1,9 @@
+CREATE OR REPLACE VIEW VW_ACCEPTING_REJECT_PRINT 					--------------------------- NEW VERSION 
+AS 
+SELECT * FROM VW_ACCEPTING_REJECT_DETAILS_PRINT
+WHERE issued='Y' AND (
+(
+custom_order_id IS NOT NULL AND custom_designer_received IS NULL AND designer_rejected='Y' AND designer_returned IS NULL)  
+OR 
+(delivered = 'Y' AND  designer_received IS NULL)
+) ;
