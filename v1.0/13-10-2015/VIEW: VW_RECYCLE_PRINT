@@ -1,0 +1,20 @@
+CREATE OR REPLACE VIEW VW_RECYCLE_PRINT
+AS
+SELECT 
+product_code,
+designer_code,
+v_arp.item_code,
+v_arp.print_code,
+v_arp.printing_type,
+v_arp.print_colour,
+v_arp.num_screens_blocks,
+v_arp.num_colours,
+print_length AS Length,
+print_width AS Width,
+print_pcs AS Pcs,
+print_total_measurement AS Total_measurement
+FROM 
+VW_ACCEPTING_REJECT_DETAILS_PRINT v_arp, 
+ACCEPTING_REJECT_PRINT arp
+WHERE v_arp.transaction_id= arp.old_transaction_id
+AND arp.recycled = 'Y';
