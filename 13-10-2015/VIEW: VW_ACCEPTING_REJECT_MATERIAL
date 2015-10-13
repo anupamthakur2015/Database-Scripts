@@ -1,4 +1,0 @@
-CREATE OR REPLACE VIEW VW_ACCEPTING_REJECT_MATERIAL 					--------------------------- NEW VERSION 
-AS 
-SELECT * FROM VW_ACCEPTING_REJECT_DETAILS_MATERIAL
-WHERE issued='Y' AND delivered='Y' and designer_received IS NULL and designer_rejected='Y';
