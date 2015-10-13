@@ -1,0 +1,19 @@
+CREATE OR REPLACE VIEW VW_RECYCLE_FABRIC
+AS
+SELECT 
+product_code,
+designer_code,
+v_arf.item_code,
+v_arf.fabric_code, 
+fabric_name,
+fabric_type,  
+(CASE WHEN customized='Y' THEN custom_fabric_length ELSE fabric_length END) AS Length,
+(CASE WHEN customized='Y' THEN custom_fabric_width ELSE fabric_width END) AS Width,
+(CASE WHEN customized='Y' THEN custom_fabric_shrinkage ELSE fabric_shrinkage END) AS Shrinkage,
+(CASE WHEN customized='Y' THEN custom_fabric_pcs ELSE fabric_pcs END) AS Pcs,
+(CASE WHEN customized='Y' THEN custom_fabric_total_measurement ELSE fabric_total_measurement END) AS Total_measurement
+FROM 
+VW_ACCEPTING_REJECT_DETAILS_FABRIC v_arf, 
+ACCEPTING_REJECT_FABRIC arf
+WHERE v_arf.transaction_id=arf.old_transaction_id
+AND arf.recycled = ‘Y’;
