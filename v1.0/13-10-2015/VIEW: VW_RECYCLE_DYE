@@ -1,0 +1,19 @@
+CREATE OR REPLACE VIEW VW_RECYCLE_DYE
+AS
+SELECT 
+product_code,
+designer_code,
+v_ard.item_code,
+v_ard.dye_code, 
+v_ard.fabric_code,
+v_ard.fabric_name, 
+v_ard.fabric_type,
+dye_length AS Length,
+dye_width AS Width,
+dye_pcs AS Pcs,
+dye_total_measurement AS Total_measurement
+FROM 
+VW_ACCEPTING_REJECT_DETAILS_DYE v_ard, 
+ACCEPTING_REJECT_DYE ard
+WHERE v_ard.transaction_id= ard.old_transaction_id
+AND ard.recycled = 'Y';
