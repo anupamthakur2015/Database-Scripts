@@ -1,0 +1,16 @@
+CREATE OR REPLACE VIEW VW_RECYCLE_MATERIAL
+AS
+SELECT 
+product_code,
+designer_code,
+v_arm.item_code,
+v_arm.material_code, 
+material_type,
+material_colour, 
+(CASE WHEN customized='Y' THEN custom_material_total_quantity ELSE material_total_quantity END) AS Quantity,
+(CASE WHEN customized='Y' THEN custom_total_amount ELSE total_amount END) AS Amount
+FROM 
+VW_ACCEPTING_REJECT_DETAILS_MATERIAL v_arm, 
+ACCEPTING_REJECT_MATERIAL arm
+WHERE v_arm.transaction_id=arm.old_transaction_id
+AND arm.recycled = 'Y';
