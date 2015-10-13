@@ -1,0 +1,24 @@
+CREATE OR REPLACE VIEW VW_RECYCLE_EMBROIDERY
+AS
+SELECT 
+product_code,
+designer_code,
+v_are.item_code,
+v_are.embrd_code,
+v_are.embrd_desc,
+v_are.embrd_std_unit,
+v_are.fabric_name,
+v_are.fabric_base_colour,
+embrd_total_metre,
+embrd_total_pcs,
+embrd_total_set,
+embrd_total_line,
+embrd_total_length_inch1,
+embrd_total_width_inch2,
+embrd_total_height_inch3,
+embrd_total_measurement
+FROM 
+VW_ACCEPTING_REJECT_DETAILS_EMBROIDERY v_are, 
+ACCEPTING_REJECT_EMBROIDERY are
+WHERE v_are.transaction_id= are.old_transaction_id
+AND are.recycled = 'Y';
