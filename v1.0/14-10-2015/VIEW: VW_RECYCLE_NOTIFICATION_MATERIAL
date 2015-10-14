@@ -1,0 +1,17 @@
+CREATE OR REPLACE VIEW VW_RECYCLE_NOTIFICATION_MATERIAL
+AS
+SELECT 
+rm.recycle_material_id,
+rm.recycle_code,
+rm.stock_code,
+v_sc.category_name,
+v_sc.designer_name,
+v_sc.designer_code,
+v_sc.style_code,
+v_sc.color_code,
+recycle_material_total_quantity,
+recycle_material_total_amount,
+recycled_date
+ FROM RECYCLE_MATERIAL rm
+LEFT JOIN VW_STYLE_CCODE_DETAILS v_sc ON  rm.style_ccode_id=v_sc.style_ccode_id
+WHERE clearance_date IS NULL;
