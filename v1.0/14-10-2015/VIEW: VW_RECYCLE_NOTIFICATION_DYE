@@ -1,0 +1,20 @@
+CREATE OR REPLACE VIEW VW_RECYCLE_NOTIFICATION_DYE
+AS
+SELECT 
+rd.recycle_dye_id,
+rd.recycle_code,
+rd.stock_code,
+v_sc.category_name,
+v_sc.designer_name,
+v_sc.designer_code,
+v_sc.style_code,
+v_sc.color_code,
+recycle_dye_length,
+recycle_dye_width,
+recycle_dye_pcs,
+recycle_dye_total_measurement,
+recycle_dye_total_amount,
+recycled_date
+ FROM RECYCLE_DYE rd
+LEFT JOIN VW_STYLE_CCODE_DETAILS v_sc ON  rd.style_ccode_id=v_sc.style_ccode_id
+WHERE clearance_date IS NULL;
