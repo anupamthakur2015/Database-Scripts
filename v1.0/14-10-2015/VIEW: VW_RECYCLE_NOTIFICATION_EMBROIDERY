@@ -1,0 +1,24 @@
+CREATE OR REPLACE VIEW VW_RECYCLE_NOTIFICATION_EMBROIDERY
+AS
+SELECT 
+re.recycle_embrd_id,
+re.recycle_code,
+re.stock_code,
+v_sc.category_name,
+v_sc.designer_name,
+v_sc.designer_code,
+v_sc.style_code,
+v_sc.color_code,
+recycle_embrd_metre,
+recycle_embrd_pcs,
+recycle_embrd_set,
+recycle_embrd_line,
+recycle_embrd_length_inch1,
+recycle_embrd_width_inch2,
+recycle_embrd_height_inch3,
+recycle_embrd_total_measurement,
+recycle_embrd_total_amount,
+recycled_date
+ FROM RECYCLE_EMBROIDERY re
+LEFT JOIN VW_STYLE_CCODE_DETAILS v_sc ON  re.style_ccode_id=v_sc.style_ccode_id
+WHERE clearance_date IS NULL;
