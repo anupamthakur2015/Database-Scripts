@@ -1,0 +1,24 @@
+CREATE OR REPLACE VIEW VW_STYLE_CCODE_DETAILS AS 
+ SELECT scm.style_ccode_id,
+    scm.style_code,
+    scm.color_code,
+    scm.color,
+    cm.classification_code,
+    cm.classification_name,
+    catm.category_code,
+    catm.category_name,
+    scd.gender,
+    scd.description,
+    scd.price,
+    scd.photo_path,
+    stm.style_type,
+    cdm.designer_code,
+    cdm.designer_name,
+    cdm.joining_date
+   FROM cm_style_ccode_master scm
+     LEFT JOIN cm_style_code_details scd ON scm.style_ccode_id = scd.style_ccode_id
+     LEFT JOIN cm_classification_master cm ON cm.classification_id = scd.classification_id
+     LEFT JOIN cm_category_master catm ON catm.category_id = cm.category_id
+     LEFT JOIN cm_style_types_master stm ON stm.style_type_id = scd.style_type_id
+     LEFT JOIN cm_style_designer sd ON scm.style_ccode_id = sd.style_ccode_id
+     LEFT JOIN cm_designer_master cdm ON cdm.designer_id = sd.designer_id;
