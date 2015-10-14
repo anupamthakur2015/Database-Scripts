@@ -1,0 +1,21 @@
+CREATE OR REPLACE VIEW VW_RECYCLE_NOTIFICATION_FABRIC
+AS
+SELECT 
+rf.recycle_fabric_id,
+rf.recycle_code,
+rf.stock_code,
+v_sc.category_name,
+v_sc.designer_name,
+v_sc.designer_code,
+v_sc.style_code,
+v_sc.color_code,
+recycle_fabric_length,
+recycle_fabric_width,
+recycle_fabric_pcs,
+recycle_fabric_shrinkage,
+recycle_fabric_total_measurement,
+recycle_fabric_total_amount,
+recycled_date
+ FROM RECYCLE_FABRIC rf
+LEFT JOIN VW_STYLE_CCODE_DETAILS v_sc ON  rf.style_ccode_id=v_sc.style_ccode_id
+WHERE clearance_date IS NULL;
