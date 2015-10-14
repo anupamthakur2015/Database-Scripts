@@ -1,0 +1,20 @@
+CREATE OR REPLACE VIEW VW_RECYCLE_NOTIFICATION_PRINT
+AS
+SELECT 
+rp.recycle_print_id,
+rp.recycle_code,
+rp.stock_code,
+v_sc.category_name,
+v_sc.designer_name,
+v_sc.designer_code,
+v_sc.style_code,
+v_sc.color_code,
+recycle_print_length,
+recycle_print_width,
+recycle_print_pcs,
+recycle_print_total_measurement,
+recycle_print_total_amount,
+recycled_date
+ FROM RECYCLE_PRINT rp
+LEFT JOIN VW_STYLE_CCODE_DETAILS v_sc ON  rp.style_ccode_id=v_sc.style_ccode_id
+WHERE clearance_date IS NULL;
