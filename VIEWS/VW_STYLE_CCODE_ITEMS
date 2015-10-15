@@ -1,0 +1,12 @@
+CREATE OR REPLACE VIEW VW_STYLE_CCODE_ITEMS AS 
+ SELECT items.style_item_id,
+    items.style_ccode_id,
+    items.item_code,
+    im.item_name,
+    items.quantity,
+    item_stdm.stdum_name AS item_std_unit,
+    items.total_cost,
+    items.product_code
+   FROM cm_style_items items
+     JOIN stdunit_master item_stdm ON item_stdm.id = items.std_unit_id
+     LEFT JOIN cm_items_master im ON im.item_id = items.cm_item_id;
