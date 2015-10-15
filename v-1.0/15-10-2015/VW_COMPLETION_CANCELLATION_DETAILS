@@ -1,0 +1,18 @@
+CREATE OR REPLACE VIEW VW_COMPLETION_CANCELLATION_DETAILS AS 
+SELECT 
+v_cc.cc_product_life_cycle_id,
+v_cc.transaction_id,
+v_cc.cc_product_life_cycle_status_name,
+v_cc.cc_product_life_cycle_task_name,
+v_cc.start_date,
+v_cc.last_task_date,
+v_cc.order_no,
+v_cc.product_size,
+v_cc.price,
+v_cc.style_code,
+v_cc.color_code,
+v_cc.color,
+v_sci.*
+FROM vw_completion_cancellation v_cc     
+LEFT JOIN vw_style_ccode_items v_sci 
+ON v_sci.style_ccode_id = v_cc.style_ccode_id AND v_sci.product_code=v_cc.product_code;
