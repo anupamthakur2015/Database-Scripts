@@ -1,0 +1,24 @@
+CREATE OR REPLACE FUNCTION FUNC_TRACKER_DEPARTMENT_REJECT_RETURN_REPAIR_DYE(
+    IN v_order_id integer,
+    IN v_department_returned character varying,
+    IN v_department_rejected character varying,
+    IN v_department_to_repair_redo character varying,
+    IN v_department_not_accepted_reason character varying,
+    OUT output_msg text,
+    OUT id integer)
+  RETURNS record AS
+$BODY$
+BEGIN
+
+	Update TRACKER_ORDERS_DYE set department_returned = v_department_returned,
+	department_rejected = v_department_rejected,
+	department_to_repair_redo = v_department_to_repair_redo,
+	department_not_accepted_reason = v_department_not_accepted_reason,
+	department_not_accepted_date = current_timestamp
+	where order_id = v_order_id;
+	output_msg:='Successfully';
+
+
+END
+$BODY$
+  LANGUAGE plpgsql
