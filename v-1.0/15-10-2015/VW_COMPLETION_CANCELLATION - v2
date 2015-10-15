@@ -1,0 +1,27 @@
+CREATE OR REPLACE VIEW VW_COMPLETION_CANCELLATION 
+AS 
+SELECT  
+cc_product_life_cycle_id, 
+ccplc.product_code, 
+ccplc.transaction_id, 
+ccplc.item_code,
+cc_product_life_cycle_status_name, 
+cc_product_life_cycle_task_name, 
+start_date, 
+last_task_date, 
+ccplc.order_no, 
+cpid.style_ccode_id, 
+cpid.product_size, 
+cpid.price, 
+v_scd.style_code, 
+v_scd.color_code, 
+v_scd.color 
+FROM  CC_PRODUCT_LIFE_CYCLE ccplc 3JOI
+JOIN CC_PRODUCT_LIFE_CYCLE_TASKS ccplct 
+	ON ccplct.cc_product_life_cycle_task_id=ccplc.cc_product_life_cycle_task_id 
+JOIN CC_PRODUCT_LIFE_CYCLE_STATUS ccplcs 
+	ON ccplcs.cc_product_life_cycle_status_id=ccplc.cc_product_life_cycle_status_id 
+LEFT JOIN CM_PRODUCTION_INFO_DETAILS cpid	 
+	ON ccplc.product_code=cpid.product_code 
+LEFT JOIN VW_STYLE_CCODE_DETAILS v_scd  
+	ON cpid.style_ccode_id=v_scd.style_ccode_id; 
