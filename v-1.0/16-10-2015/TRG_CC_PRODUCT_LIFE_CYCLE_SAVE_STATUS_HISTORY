@@ -1,0 +1,86 @@
+
+CREATE OR REPLACE FUNCTION FUNC_TRG_CC_PRODUCT_LIFE_CYCLE_SAVE_ITEMS()
+  RETURNS trigger AS
+$BODY$
+BEGIN
+
+	INSERT INTO CC_PRODUCT_LIFE_CYCLE
+	(
+	  product_code,
+	  transaction_id,
+	  item_code,
+	  cc_product_life_cycle_task_id,
+	  cc_product_life_cycle_status_id,
+	  start_date,
+	  last_task_date,
+	  order_no
+	)
+	select 
+	cpid.product_code AS product_code,
+	scpim.transaction_id AS transaction_id,
+	v_sci.item_code AS item_code,
+	1,
+	1,
+	scpm.created_date AS start_date,
+	scpm.created_date AS last_task_date,
+	NULL
+	FROM 
+	CM_PRODUCTION_INFO_DETAILS cpid
+	join vw_style_ccode_items v_sci on cpid.product_code=v_sci.product_code and cpid.work_order_planned='Y'
+	left join SC_CATEGORY_PLANNING_ITEMS_MASTER scpim on scpim.item_code=v_sci.item_code
+	join sc_category_planning_master scpm on scpim.category_planning_id=scpm.category_planning_id and scpm.product_code=cpid.product_code
+	WHERE v_sci.item_code=NEW.item_code;
+
+RETURN NEW;
+END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+  
+  CREATE TRIGGER TRG_CC_PRODUCT_LIFE_CYCLE_SAVE_ITEMS
+  AFTER INSERT
+  ON sc_category_planning_items_master
+  FOR EACH ROW
+  EXECUTE PROCEDURE func_trg_cc_product_life_cycle_save_items();
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------  
+  
+  
+CREATE OR REPLACE FUNCTION FUNC_TRG_CC_PRODUCT_LIFE_CYCLE_SAVE_STATUS_HISTORY()
+  RETURNS trigger AS
+$BODY$
+BEGIN
+
+	INSERT INTO CC_PRODUCT_LIFE_CYCLE_STATUS_HISTORY
+	(
+	  cc_product_life_cycle_id,
+	  old_life_cycle_status_id,
+	  new_life_cycle_status_id,
+	  old_life_cycle_task_id,
+	  new_life_cycle_task_id,
+	  status_changed_date
+	)
+	select 
+	NEW.cc_product_life_cycle_id,
+	OLD.cc_product_life_cycle_status_id,
+	NEW.cc_product_life_cycle_status_id,
+	OLD.cc_product_life_cycle_task_id,
+	NEW.cc_product_life_cycle_task_id,
+	CURRENT_TIMESTAMP;
+
+RETURN NEW;
+END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+  
+  CREATE TRIGGER TRG_CC_PRODUCT_LIFE_CYCLE_SAVE_STATUS_HISTORY
+  AFTER UPDATE
+  ON cc_product_life_cycle
+  FOR EACH ROW
+  EXECUTE PROCEDURE func_trg_cc_product_life_cycle_save_status_history();
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------  
+  
