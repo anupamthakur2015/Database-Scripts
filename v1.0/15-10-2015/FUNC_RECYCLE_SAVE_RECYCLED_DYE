@@ -1,0 +1,58 @@
+ CREATE OR REPLACE FUNCTION FUNC_RECYCLE_SAVE_RECYCLED_DYE(
+    IN arr_recycle_code character varying[],
+    IN arr_stock_code character varying[],
+    IN arr_accepting_reject_dye_id integer[],
+    IN arr_dye_requisition_id integer[],
+    IN arr_dye_code character varying[],
+    IN arr_style_ccode_id integer[],
+    IN arr_fabric_code character varying[],
+    IN arr_recycle_dye_length double precision[],
+    IN arr_recycle_dye_width double precision[],
+    IN arr_recycle_dye_pcs integer[],
+    IN arr_recycle_dye_total_measurement double precision[],
+    IN arr_recycle_dye_total_amount double precision[],
+    OUT output_msg text,
+    OUT id integer)
+  RETURNS record AS
+$BODY$
+
+BEGIN
+
+	INSERT INTO recycle_dye (
+		recycle_code,
+		stock_code,
+		accepting_reject_dye_id,
+		dye_requisition_id,
+		dye_code,
+		style_ccode_id,
+		fabric_code,
+		recycle_dye_length,
+		recycle_dye_width,
+		recycle_dye_pcs,
+		recycle_dye_total_measurement,
+		recycle_dye_total_amount,
+		recycled_date
+	)
+	select
+		UNNEST(arr_recycle_code:: varchar[]),
+		UNNEST(arr_stock_code::varchar[]),
+		UNNEST(arr_accepting_reject_dye_id:: integer[]),
+		UNNEST(arr_dye_requisition_id:: integer[]),
+		UNNEST(arr_dye_code::varchar[]),
+		UNNEST(arr_style_ccode_id::integer[]),
+		UNNEST(arr_fabric_code::varchar[]),
+		UNNEST(arr_recycle_dye_length::float[]),
+		UNNEST(arr_recycle_dye_width::float[]),
+		UNNEST(arr_recycle_dye_pcs::integer[]),
+		UNNEST(arr_recycle_dye_total_measurement::float[]),
+		UNNEST(arr_recycle_dye_total_amount::float[]),
+		CURRENT_TIMESTAMP
+	;
+
+	output_msg:='Successfully inserted';
+
+
+END
+
+$BODY$
+  LANGUAGE plpgsql;
