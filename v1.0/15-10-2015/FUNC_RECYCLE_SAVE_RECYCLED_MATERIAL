@@ -1,0 +1,47 @@
+CREATE OR REPLACE FUNCTION FUNC_RECYCLE_SAVE_RECYCLED_MATERIAL(
+    IN arr_recycle_code varchar[],
+    IN arr_stock_code varchar[],
+    IN arr_accepting_reject_material_id integer[],
+    IN arr_material_requisition_id integer[],
+    IN arr_material_code varchar[],
+    IN arr_style_ccode_id integer[],  
+    IN arr_material_total_quantity float[],
+    IN arr_material_total_amount float[],
+    OUT output_msg text,
+    OUT id integer)
+  RETURNS record AS
+
+$BODY$
+
+BEGIN   
+
+		INSERT INTO RECYCLE_MATERIAL (
+			recycle_code,
+			stock_code,
+			accepting_reject_material_id,			
+			material_requisition_id,
+			material_code,
+			style_ccode_id,			
+			recycle_material_total_quantity,
+			recycle_material_total_amount,
+			recycled_date
+		)
+		select 
+			UNNEST(arr_recycle_code:: varchar[]),
+			UNNEST(arr_stock_code::varchar[]),
+			UNNEST(arr_accepting_reject_material_id:: integer[]),
+			UNNEST(arr_material_requisition_id:: integer[]),
+			UNNEST(arr_material_code::varchar[]),
+			UNNEST(arr_style_ccode_id::integer[]),
+			UNNEST(arr_material_total_quantity::float[]),
+			UNNEST(arr_material_total_amount::float[]),
+			CURRENT_TIMESTAMP
+		;
+
+		output_msg:='Successfully inserted';
+	
+
+END
+
+$BODY$
+  LANGUAGE plpgsql;
