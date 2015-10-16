@@ -1,0 +1,60 @@
+CREATE OR REPLACE FUNCTION FUNC_RECYCLE_SAVE_RECYCLED_FABRIC(
+    IN arr_recycle_code varchar[],
+    IN arr_stock_code varchar[],
+    IN arr_accepting_reject_fabric_id integer[],
+    IN arr_fabric_requisition_id integer[],
+    IN arr_fabric_code varchar[],
+    IN arr_style_ccode_id integer[],  
+    IN arr_fabric_length float[],
+    IN arr_fabric_width float[],
+    IN arr_fabric_pcs integer[],
+    IN arr_fabric_shrinkage float[],
+    IN arr_fabric_total_measurement float[],
+    IN arr_fabric_total_amount float[],
+
+    OUT output_msg text,
+    OUT id integer)
+  RETURNS record AS
+
+$BODY$
+
+BEGIN   
+
+		INSERT INTO RECYCLE_FABRIC (
+			recycle_code,
+			stock_code,
+			accepting_reject_fabric_id,			
+			fabric_requisition_id,
+			fabric_code,
+			style_ccode_id,
+			recycle_fabric_length,
+			recycle_fabric_width,
+			recycle_fabric_pcs,
+			recycle_fabric_shrinkage,
+			recycle_fabric_total_measurement,
+			recycle_fabric_total_amount,
+			recycled_date
+		)
+		select 
+			UNNEST(arr_recycle_code:: varchar[]),
+			UNNEST(arr_stock_code::varchar[]),
+			UNNEST(arr_accepting_reject_fabric_id:: integer[]),
+			UNNEST(arr_fabric_requisition_id:: integer[]),
+			UNNEST(arr_fabric_code::varchar[]),
+			UNNEST(arr_style_ccode_id::integer[]),		
+			UNNEST(arr_fabric_length::float[]),
+			UNNEST(arr_fabric_width::float[]),
+			UNNEST(arr_fabric_pcs::integer[]),
+			UNNEST(arr_fabric_shrinkage::float[]),
+			UNNEST(arr_fabric_total_measurement::float[]),
+			UNNEST(arr_fabric_total_amount::float[]),
+			CURRENT_TIMESTAMP
+		;
+
+		output_msg:='Successfully inserted';
+	
+
+END
+
+$BODY$
+  LANGUAGE plpgsql;
