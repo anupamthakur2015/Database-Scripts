@@ -1,0 +1,70 @@
+CREATE OR REPLACE FUNCTION FUNC_RECYCLE_SAVE_RECYCLED_EMBROIDERY(
+    IN arr_recycle_code character varying[],
+    IN arr_stock_code character varying[],
+    IN arr_accepting_reject_embrd_id integer[],
+    IN arr_embrd_requisition_id integer[],
+    IN arr_embrd_code character varying[],
+    IN arr_fabric_code character varying[],
+    IN arr_style_ccode_id integer[],
+    IN arr_recycle_embrd_metre double precision[],
+    IN arr_recycle_embrd_pcs integer[],
+    IN arr_recycle_embrd_set integer[],
+    IN arr_recycle_embrd_line double precision[],
+    IN arr_recycle_embrd_length_inch1 double precision[],
+    IN arr_recycle_embrd_width_inch2 double precision[],
+    IN arr_recycle_embrd_height_inch3 double precision[],
+    IN arr_recycle_embrd_total_measurement double precision[],
+    IN arr_recycle_embrd_total_amount double precision[],
+    OUT output_msg text,
+    OUT id integer)
+  RETURNS record AS
+$BODY$
+
+BEGIN
+
+	INSERT INTO recycle_embroidery (
+		  recycle_code ,
+		  stock_code ,
+		  accepting_reject_embrd_id ,
+		  embrd_requisition_id ,
+		  embrd_code ,
+		  fabric_code,
+		  style_ccode_id ,
+		  recycle_embrd_metre ,
+		  recycle_embrd_pcs ,
+		  recycle_embrd_set ,
+		  recycle_embrd_line,
+		  recycle_embrd_length_inch1 ,
+		  recycle_embrd_width_inch2 ,
+		  recycle_embrd_height_inch3 ,
+		  recycle_embrd_total_measurement ,
+		  recycle_embrd_total_amount ,
+		  recycled_date
+	)
+	select
+		UNNEST(arr_recycle_code:: varchar[]),
+		UNNEST(arr_stock_code::varchar[]),
+		UNNEST(arr_accepting_reject_embrd_id:: integer[]),
+		UNNEST(arr_embrd_requisition_id:: integer[]),
+		UNNEST(arr_embrd_code::varchar[]),
+		UNNEST(arr_fabric_code::varchar[]),
+		UNNEST(arr_style_ccode_id::integer[]),
+		UNNEST(arr_recycle_embrd_metre::float[]),
+		UNNEST(arr_recycle_embrd_pcs::integer[]),
+		UNNEST(arr_recycle_embrd_set:: integer[]),
+		UNNEST(arr_recycle_embrd_line::float[]),
+		UNNEST(arr_recycle_embrd_length_inch1::float[]),
+		UNNEST(arr_recycle_embrd_width_inch2::float[]),
+		UNNEST(arr_recycle_embrd_height_inch3::float[]),
+		UNNEST(arr_recycle_embrd_total_measurement::float[]),
+		UNNEST(arr_recycle_embrd_total_amount::float[]),
+		CURRENT_TIMESTAMP
+	;
+
+	output_msg:='Successfully inserted';
+
+
+END
+
+$BODY$
+  LANGUAGE plpgsql;
