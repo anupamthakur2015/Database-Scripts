@@ -1,0 +1,58 @@
+CREATE OR REPLACE FUNCTION FUNC_RECYCLE_SAVE_RECYCLED_PRINT(
+    IN arr_recycle_code character varying[],
+    IN arr_stock_code character varying[],
+    IN arr_accepting_reject_print_id integer[],
+    IN arr_print_requisition_id integer[],
+    IN arr_print_code character varying[],
+    IN arr_style_ccode_id integer[],
+    IN arr_fabric_code character varying[],
+    IN arr_recycle_print_length double precision[],
+    IN arr_recycle_print_width double precision[],
+    IN arr_recycle_print_pcs integer[],
+    IN arr_recycle_print_total_measurement double precision[],
+    IN arr_recycle_print_total_amount double precision[],
+    OUT output_msg text,
+    OUT id integer)
+  RETURNS record AS
+$BODY$
+
+BEGIN
+
+	INSERT INTO recycle_print (
+		recycle_code,
+		stock_code,
+		accepting_reject_print_id,
+		print_requisition_id,
+		print_code,
+		style_ccode_id,
+		fabric_code,
+		recycle_print_length,
+		recycle_print_width,
+		recycle_print_pcs,
+		recycle_print_total_measurement,
+		recycle_print_total_amount,
+		recycled_date
+	)
+	select
+		UNNEST(arr_recycle_code:: varchar[]),
+		UNNEST(arr_stock_code::varchar[]),
+		UNNEST(arr_accepting_reject_print_id:: integer[]),
+		UNNEST(arr_print_requisition_id:: integer[]),
+		UNNEST(arr_print_code::varchar[]),
+		UNNEST(arr_style_ccode_id::integer[]),
+		UNNEST(arr_fabric_code::varchar[]),
+		UNNEST(arr_recycle_print_length::float[]),
+		UNNEST(arr_recycle_print_width::float[]),
+		UNNEST(arr_recycle_print_pcs::integer[]),
+		UNNEST(arr_recycle_print_total_measurement::float[]),
+		UNNEST(arr_recycle_print_total_amount::float[]),
+		CURRENT_TIMESTAMP
+	;
+
+	output_msg:='Successfully inserted';
+
+
+END
+
+$BODY$
+  LANGUAGE plpgsql;
