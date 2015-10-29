@@ -1,0 +1,33 @@
+CREATE OR REPLACE VIEW VW_SC_DEPT_ITEM_DISP AS 
+ SELECT distinct cp_items_master.category_planning_id,
+    get_sc_product_codes(cp_items_master.category_planning_id) AS product_codes,
+    get_sc_production_types(cp_items_master.category_planning_id) AS production_type,
+    cp_items_master.sc_planning_main_item_id,
+    cp_items_master.item_code AS plan_item_code,
+    cp_items_master.transaction_id,
+    cp_items_master.total_quantity,
+    cp_items_master.raw_material_min_date,
+    cp_items_master.raw_material_max_date,
+    sub_style_details.style_item_code,
+    sub_style_details.category_name,
+    sub_style_details.style_item_name,
+    sub_style_details.style_code,
+    sub_style_details.color_code,
+    sub_style_details.color,
+    sub_style_details.style_item_quantity,
+    sub_style_details.style_item_std_unit,
+    sub_style_details.style_total_cost,
+    cp_items_master.item_approved
+   FROM sc_category_planning_items_master cp_items_master
+     LEFT JOIN ( SELECT v_sci.item_code AS style_item_code,
+            v_scd.category_name,
+            v_sci.item_name AS style_item_name,
+            v_scd.style_code,
+            v_scd.color_code,
+            v_scd.color,
+            v_sci.quantity AS style_item_quantity,
+            v_sci.item_std_unit AS style_item_std_unit,
+            v_sci.total_cost AS style_total_cost
+           FROM vw_style_ccode_items v_sci
+             LEFT JOIN vw_style_ccode_details v_scd ON v_sci.style_ccode_id = v_scd.style_ccode_id
+) sub_style_details ON sub_style_details.style_item_code::text = cp_items_master.item_code::text;
