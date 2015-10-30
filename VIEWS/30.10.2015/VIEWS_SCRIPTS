@@ -1,0 +1,2141 @@
+CREATE OR REPLACE VIEW vw_sc_dept_item_disp AS 
+ SELECT DISTINCT cp_items_master.category_planning_id,
+    get_sc_product_codes(cp_items_master.category_planning_id) AS product_codes,
+    get_sc_production_types(cp_items_master.category_planning_id) AS production_type,
+    cp_items_master.sc_planning_main_item_id,
+    cp_items_master.item_code AS plan_item_code,
+    cp_items_master.transaction_id,
+    cp_items_master.total_quantity,
+    cp_items_master.raw_material_min_date,
+    cp_items_master.raw_material_max_date,
+    sub_style_details.style_item_code,
+    sub_style_details.category_name,
+    sub_style_details.style_item_name,
+    sub_style_details.style_code,
+    sub_style_details.color_code,
+    sub_style_details.color,
+    sub_style_details.style_item_quantity,
+    sub_style_details.style_item_std_unit,
+    sub_style_details.style_total_cost,
+    cp_items_master.item_approved
+   FROM sc_category_planning_items_master cp_items_master
+     LEFT JOIN ( SELECT DISTINCT v_sci.item_code AS style_item_code,
+            v_scd.category_name,
+            v_sci.item_name AS style_item_name,
+            v_scd.style_code,
+            v_scd.color_code,
+            v_scd.color,
+            v_sci.quantity AS style_item_quantity,
+            v_sci.item_std_unit AS style_item_std_unit,
+            v_sci.total_cost AS style_total_cost
+           FROM vw_style_ccode_items v_sci
+             LEFT JOIN vw_style_ccode_details v_scd ON v_sci.style_ccode_id = v_scd.style_ccode_id
+          WHERE (v_sci.product_code::text IN ( SELECT sc_category_planning_master.product_code
+                   FROM sc_category_planning_master))) sub_style_details ON sub_style_details.style_item_code::text = cp_items_master.item_code::text;
+
+
+
+CREATE OR REPLACE VIEW VW_SC_DEPT_ITEM_DISP_ASIS_PRINT AS 
+ SELECT v_dept_item.category_planning_id,
+    v_dept_item.product_codes,
+    v_dept_item.production_type,
+    v_dept_item.sc_planning_main_item_id,
+    v_dept_item.plan_item_code,
+    v_dept_item.transaction_id,
+    v_dept_item.total_quantity,
+    v_dept_item.raw_material_min_date,
+    v_dept_item.raw_material_max_date,
+    v_dept_item.style_item_code,
+    v_dept_item.category_name,
+    v_dept_item.style_item_name,
+    v_dept_item.style_code,
+    v_dept_item.color_code,
+    v_dept_item.color,
+    v_dept_item.style_item_quantity,
+    v_dept_item.style_item_std_unit,
+    v_dept_item.style_total_cost,
+    v_print_details.style_ccode_id,
+    v_print_details.item_code,
+    v_print_details.item_name,
+    v_print_details.item_quantity,
+    v_print_details.item_std_unit,
+    v_print_details.print_code,
+    v_print_details.printing_type,
+    v_print_details.print_colour,
+    v_print_details.num_screens_blocks,
+    v_print_details.num_colours,
+    v_print_details.print_photo,
+    v_print_details.print_metre,
+    v_print_details.print_inches,
+    v_print_details.pcs,
+    v_print_details.total_measurement,
+    v_print_details.total_cost,
+    sc_asis_print.sc_asis_plan_print_item_id,
+    sc_asis_print.transaction_id AS print_trans_id,
+    sc_asis_print.print_total_length_metre AS asis_print_total_length_metre,
+    sc_asis_print.print_total_width_inches AS asis_print_total_width_inch,
+    sc_asis_print.print_total_pcs AS asis_print_total_pcs,
+    sc_asis_print.print_total_measurement AS asis_print_total_measurement,
+    sc_asis_print.print_issue_min_date,
+    sc_asis_print.print_issue_max_date,
+    sc_asis_print.print_delivery_min_date,
+    sc_asis_print.print_delivery_max_date,
+    sc_asis_print.custom,
+    sc_asis_print.dept_changed,
+    item_fabric_details.fabric_name,
+    sc_asis_print.sent_for_approval,
+    v_dept_item.item_approved,
+    sc_asis_print.item_approved AS print_item_approved
+   FROM vw_sc_dept_item_disp v_dept_item
+     JOIN sc_category_planning_items_asis_print sc_asis_print ON v_dept_item.sc_planning_main_item_id = sc_asis_print.sc_planning_main_item_id
+     LEFT JOIN vw_style_ccode_item_printing_details v_print_details ON v_print_details.item_code::text = v_dept_item.plan_item_code::text
+     LEFT JOIN vw_style_ccode_item_fabric_details item_fabric_details ON item_fabric_details.item_code::text = v_dept_item.plan_item_code::text;
+
+
+
+CREATE OR REPLACE VIEW VW_SC_DEPT_ITEM_DISP_ASIS_MATERIAL AS 
+ SELECT v_dept_item.category_planning_id,
+    v_dept_item.product_codes,
+    v_dept_item.production_type,
+    v_dept_item.sc_planning_main_item_id,
+    v_dept_item.plan_item_code,
+    v_dept_item.transaction_id,
+    v_dept_item.total_quantity,
+    v_dept_item.raw_material_min_date,
+    v_dept_item.raw_material_max_date,
+    v_dept_item.style_item_code,
+    v_dept_item.category_name,
+    v_dept_item.style_item_name,
+    v_dept_item.style_code,
+    v_dept_item.color_code,
+    v_dept_item.color,
+    v_dept_item.style_item_quantity,
+    v_dept_item.style_item_std_unit,
+    v_dept_item.style_total_cost,
+    v_material_details.style_ccode_id,
+    v_material_details.item_code,
+    v_material_details.item_name,
+    v_material_details.item_quantity,
+    v_material_details.item_std_unit,
+    v_material_details.material_code,
+    v_material_details.material_name,
+    v_material_details.material_colour,
+    v_material_details.material_type,
+    v_material_details.material_std_unit,
+    v_material_details.material_quantity,
+    sc_asis_material.sc_asis_plan_material_item_id,
+    sc_asis_material.transaction_id AS mat_trans_id,
+    sc_asis_material.material_total_quantity AS asis_material_total_quantity,
+    sc_asis_material.material_issue_min_date,
+    sc_asis_material.material_issue_max_date,
+    sc_asis_material.material_delivery_min_date,
+    sc_asis_material.material_delivery_max_date,
+    sc_asis_material.custom,
+    sc_asis_material.dept_changed,
+    sc_asis_material.sent_for_approval,
+    v_dept_item.item_approved,
+    sc_asis_material.item_approved AS material_item_approved
+   FROM vw_sc_dept_item_disp v_dept_item
+     JOIN sc_category_planning_items_asis_material sc_asis_material ON v_dept_item.sc_planning_main_item_id = sc_asis_material.sc_planning_main_item_id
+     LEFT JOIN vw_style_ccode_item_material_details v_material_details ON v_material_details.item_code::text = v_dept_item.plan_item_code::text;
+
+CREATE OR REPLACE VIEW VW_SC_DEPT_ITEM_DISP_ASIS_FABRIC AS 
+ SELECT DISTINCT v_dept_item.category_planning_id,
+    v_dept_item.product_codes,
+    v_dept_item.production_type,
+    v_dept_item.sc_planning_main_item_id,
+    v_dept_item.plan_item_code,
+    v_dept_item.transaction_id,
+    v_dept_item.total_quantity,
+    v_dept_item.raw_material_min_date,
+    v_dept_item.raw_material_max_date,
+    v_dept_item.style_item_code,
+    v_dept_item.category_name,
+    v_dept_item.style_item_name,
+    v_dept_item.style_code,
+    v_dept_item.color_code,
+    v_dept_item.color,
+    v_dept_item.style_item_quantity,
+    v_dept_item.style_item_std_unit,
+    v_dept_item.style_total_cost,
+    v_fabric_details.style_ccode_id,
+    v_fabric_details.item_code,
+    v_fabric_details.item_name,
+    v_fabric_details.quantity,
+    v_fabric_details.item_std_unit,
+    v_fabric_details.fabric_code,
+    v_fabric_details.fabric_name,
+    v_fabric_details.fabric_type,
+    v_fabric_details.fabric_std_unit,
+    v_fabric_details.unit_std_width,
+    v_fabric_details.length_metre,
+    v_fabric_details.width_inch,
+    v_fabric_details.shrinkage_metre,
+    v_fabric_details.pcs,
+    round(v_fabric_details.total_measurement::numeric, 2)::double precision AS total_measurement,
+    sc_asis_fabric.sc_asis_plan_fabric_item_id,
+    sc_asis_fabric.transaction_id AS fab_trans_id,
+    sc_asis_fabric.fabric_total_length_metre AS asis_fabric_total_length_metre,
+    sc_asis_fabric.fabric_total_width_inch AS asis_fabric_total_width_inch,
+    sc_asis_fabric.fabric_total_shrinkage_metre AS asis_fabric_total_shrinkage_metre,
+    sc_asis_fabric.fabric_total_pcs AS asis_fabric_total_pcs,
+    round(sc_asis_fabric.fabric_total_measurement::numeric, 2)::double precision AS asis_fabric_total_measurement,
+    sc_asis_fabric.fabric_issue_min_date,
+    sc_asis_fabric.fabric_issue_max_date,
+    sc_asis_fabric.fabric_delivery_min_date,
+    sc_asis_fabric.fabric_delivery_max_date,
+    sc_asis_fabric.custom,
+    sc_asis_fabric.dept_changed,
+    sc_asis_fabric.sent_for_approval,
+    v_dept_item.item_approved,
+    sc_asis_fabric.item_approved AS fabric_item_approved
+   FROM vw_sc_dept_item_disp v_dept_item
+     JOIN sc_category_planning_items_asis_fabric sc_asis_fabric ON v_dept_item.sc_planning_main_item_id = sc_asis_fabric.sc_planning_main_item_id
+     LEFT JOIN vw_style_ccode_item_fabric_details v_fabric_details ON v_fabric_details.item_code::text = v_dept_item.plan_item_code::text;
+
+
+CREATE OR REPLACE VIEW VW_SC_DEPT_ITEM_DISP_ASIS_DYE AS 
+ SELECT v_dept_item.category_planning_id,
+    v_dept_item.product_codes,
+    v_dept_item.production_type,
+    v_dept_item.sc_planning_main_item_id,
+    v_dept_item.plan_item_code,
+    v_dept_item.transaction_id,
+    v_dept_item.total_quantity,
+    v_dept_item.raw_material_min_date,
+    v_dept_item.raw_material_max_date,
+    v_dept_item.style_item_code,
+    v_dept_item.category_name,
+    v_dept_item.style_item_name,
+    v_dept_item.style_code,
+    v_dept_item.color_code,
+    v_dept_item.color,
+    v_dept_item.style_item_quantity,
+    v_dept_item.style_item_std_unit,
+    v_dept_item.style_total_cost,
+    v_dye_details.style_ccode_id,
+    v_dye_details.item_code,
+    v_dye_details.item_name,
+    v_dye_details.item_quantity,
+    v_dye_details.item_std_unit,
+    v_dye_details.dye_code,
+    v_dye_details.dye_colour_name,
+    v_dye_details.generic_color_name,
+    v_dye_details.dye_process_name,
+    v_dye_details.num_colours,
+    v_dye_details.color_hex_codes,
+    v_dye_details.length_metre,
+    v_dye_details.width_inches,
+    v_dye_details.pcs,
+    v_dye_details.total_measurement,
+    v_dye_details.total_cost,
+    sc_asis_dye.sc_asis_plan_dye_item_id,
+    sc_asis_dye.transaction_id AS dye_trans_id,
+    sc_asis_dye.dye_total_length_metre AS asis_dye_total_length_metre,
+    sc_asis_dye.dye_total_width_inches AS asis_dye_total_width_inch,
+    sc_asis_dye.dye_total_pcs AS asis_dye_total_pcs,
+    sc_asis_dye.dye_total_measurement AS asis_dye_total_measurement,
+    sc_asis_dye.dye_issue_min_date,
+    sc_asis_dye.dye_issue_max_date,
+    sc_asis_dye.dye_delivery_min_date,
+    sc_asis_dye.dye_delivery_max_date,
+    sc_asis_dye.custom,
+    sc_asis_dye.dept_changed,
+    item_fabric_details.fabric_code,
+    item_fabric_details.fabric_name,
+    item_fabric_details.fabric_type,
+    sc_asis_dye.sent_for_approval,
+    v_dept_item.item_approved,
+    sc_asis_dye.item_approved AS dye_item_approved
+   FROM vw_sc_dept_item_disp v_dept_item
+     JOIN sc_category_planning_items_asis_dye sc_asis_dye ON v_dept_item.sc_planning_main_item_id = sc_asis_dye.sc_planning_main_item_id
+     LEFT JOIN vw_style_ccode_item_dye_details v_dye_details ON v_dye_details.item_code::text = v_dept_item.plan_item_code::text
+     LEFT JOIN vw_style_ccode_item_fabric_details item_fabric_details ON item_fabric_details.item_code::text = v_dept_item.plan_item_code::text;
+
+CREATE OR REPLACE VIEW VW_SC_DEPT_ITEM_DISP_ASIS_EMBROIDERY AS 
+ SELECT v_dept_item.category_planning_id,
+    v_dept_item.product_codes,
+    v_dept_item.production_type,
+    v_dept_item.sc_planning_main_item_id,
+    v_dept_item.plan_item_code,
+    v_dept_item.transaction_id,
+    v_dept_item.total_quantity,
+    v_dept_item.raw_material_min_date,
+    v_dept_item.raw_material_max_date,
+    v_dept_item.style_item_code,
+    v_dept_item.category_name,
+    v_dept_item.style_item_name,
+    v_dept_item.style_code,
+    v_dept_item.color_code,
+    v_dept_item.color,
+    v_dept_item.style_item_quantity,
+    v_dept_item.style_item_std_unit,
+    v_dept_item.style_total_cost,
+    v_embrd_details.style_ccode_id,
+    v_embrd_details.item_code,
+    v_embrd_details.item_name,
+    v_embrd_details.item_quantity,
+    v_embrd_details.item_std_unit,
+    v_embrd_details.embroidery_code,
+    v_embrd_details.embroidery_description,
+    v_embrd_details.embroidery_photo_path,
+    v_embrd_details.vendor_code,
+    v_embrd_details.embrd_std_unit,
+    v_embrd_details.fabric_code,
+    v_embrd_details.fabric_base_colour,
+    v_embrd_details.fabric_metre,
+    v_embrd_details.fabric_inches,
+    v_embrd_details.fabric_pcs,
+    v_embrd_details.material_reference,
+    v_embrd_details.metre,
+    v_embrd_details.pcs,
+    v_embrd_details.embroidery_set,
+    v_embrd_details.line,
+    v_embrd_details.length_inch1,
+    v_embrd_details.width_inch2,
+    v_embrd_details.height_inch3,
+    v_embrd_details.total_measurement,
+    v_embrd_details.total_cost,
+    sc_asis_embrd.sc_asis_plan_embrd_item_id,
+    sc_asis_embrd.transaction_id AS embrd_trans_id,
+    sc_asis_embrd.embroidery_total_metre AS asis_embroidery_total_metre,
+    sc_asis_embrd.embroidery_total_pcs AS asis_embroidery_total_pcs,
+    sc_asis_embrd.embroidery_total_set AS asis_embroidery_total_set,
+    sc_asis_embrd.embroidery_total_line AS asis_embroidery_total_line,
+    sc_asis_embrd.embroidery_total_length_inch1 AS asis_embroidery_total_length_inch1,
+    sc_asis_embrd.embroidery_total_width_inch2 AS asis_embroidery_total_width_inch2,
+    sc_asis_embrd.embroidery_total_height_inch3 AS asis_embroidery_total_height_inch3,
+    sc_asis_embrd.embroidery_total_measurement AS asis_embroidery_total_measurement,
+    sc_asis_embrd.embroidery_issue_min_date,
+    sc_asis_embrd.embroidery_issue_max_date,
+    sc_asis_embrd.embroidery_delivery_min_date,
+    sc_asis_embrd.embroidery_delivery_max_date,
+    item_fabric_details.fabric_name,
+    sc_asis_embrd.custom,
+    sc_asis_embrd.dept_changed,
+    sc_asis_embrd.sent_for_approval,
+    v_dept_item.item_approved,
+    sc_asis_embrd.item_approved AS embroidery_item_approved
+   FROM vw_sc_dept_item_disp v_dept_item
+     LEFT JOIN sc_category_planning_items_asis_embroidery sc_asis_embrd ON v_dept_item.sc_planning_main_item_id = sc_asis_embrd.sc_planning_main_item_id
+     LEFT JOIN vw_style_ccode_item_embroidery_details v_embrd_details ON v_embrd_details.item_code::text = v_dept_item.plan_item_code::text
+     LEFT JOIN vw_style_ccode_item_fabric_details item_fabric_details ON item_fabric_details.item_code::text = v_dept_item.plan_item_code::text;
+
+
+
+CREATE OR REPLACE VIEW vw_cat_custom_dye AS 
+ SELECT custom_dye_item.sc_custom_plan_dye_item_id,
+    custom_dye_item.sc_asis_plan_dye_item_id,
+    custom_dye_item.dye_total_length_metre,
+    custom_dye_item.dye_total_width_inches,
+    custom_dye_item.dye_total_pcs,
+    custom_dye_item.dye_total_measurement,
+    custom_dye_item.dye_issue_min_date,
+    custom_dye_item.dye_issue_max_date,
+    custom_dye_item.dye_delivery_min_date,
+    custom_dye_item.dye_delivery_max_date,
+    custom_dye_item.dept_changed,
+    custom_dye_item.is_delete,
+    custom_dye_item.created_date,
+    custom_dye_item.updated_date,
+    custom_dye_item.created_by,
+    custom_dye_item.updated_by,
+    custom_dye_item.transaction_id
+   FROM vw_sc_dept_item_disp_asis_dye v_asis_plan_dye_item
+     JOIN sc_cat_plan_items_custom_dye custom_dye_item ON v_asis_plan_dye_item.sc_asis_plan_dye_item_id = custom_dye_item.sc_asis_plan_dye_item_id
+  WHERE v_asis_plan_dye_item.custom = 'Y'::bpchar;
+
+
+CREATE OR REPLACE VIEW vw_cat_custom_embroidery AS 
+ SELECT custom_embrd_item.sc_custom_plan_embd_item_id,
+    custom_embrd_item.sc_asis_plan_embrd_item_id,
+    custom_embrd_item.embroidery_total_metre,
+    custom_embrd_item.embroidery_total_pcs,
+    custom_embrd_item.embroidery_total_set,
+    custom_embrd_item.embroidery_total_line,
+    custom_embrd_item.embroidery_total_length_inch1,
+    custom_embrd_item.embroidery_total_width_inch2,
+    custom_embrd_item.embroidery_total_height_inch3,
+    custom_embrd_item.embroidery_total_measurement,
+    custom_embrd_item.embroidery_issue_min_date,
+    custom_embrd_item.embroidery_issue_max_date,
+    custom_embrd_item.embroidery_delivery_min_date,
+    custom_embrd_item.embroidery_delivery_max_date,
+    custom_embrd_item.dept_changed,
+    custom_embrd_item.is_delete,
+    custom_embrd_item.created_date,
+    custom_embrd_item.updated_date,
+    custom_embrd_item.created_by,
+    custom_embrd_item.updated_by,
+    custom_embrd_item.transaction_id
+   FROM vw_sc_dept_item_disp_asis_embroidery v_asis_plan_embrd_item
+     JOIN sc_cat_plan_items_custom_embrd custom_embrd_item ON v_asis_plan_embrd_item.sc_asis_plan_embrd_item_id = custom_embrd_item.sc_asis_plan_embrd_item_id
+  WHERE v_asis_plan_embrd_item.custom = 'Y'::bpchar;
+
+
+CREATE OR REPLACE VIEW vw_cat_custom_fabric AS 
+ SELECT custom_fabric_item.sc_custom_plan_fabric_item_id,
+    custom_fabric_item.sc_asis_plan_fabric_item_id,
+    custom_fabric_item.transaction_id,
+    custom_fabric_item.fabric_total_length_metre,
+    custom_fabric_item.fabric_total_width_inch,
+    custom_fabric_item.fabric_total_shrinkage_metre,
+    custom_fabric_item.fabric_total_pcs,
+    custom_fabric_item.fabric_total_measurement,
+    custom_fabric_item.fabric_issue_min_date,
+    custom_fabric_item.fabric_issue_max_date,
+    custom_fabric_item.fabric_delivery_min_date,
+    custom_fabric_item.fabric_delivery_max_date,
+    custom_fabric_item.dept_changed,
+    custom_fabric_item.is_delete,
+    custom_fabric_item.created_date,
+    custom_fabric_item.updated_date,
+    custom_fabric_item.created_by,
+    custom_fabric_item.updated_by
+   FROM vw_sc_dept_item_disp_asis_fabric v_asis_plan_fabric_item
+     JOIN sc_cat_plan_items_custom_fabric custom_fabric_item ON v_asis_plan_fabric_item.sc_asis_plan_fabric_item_id = custom_fabric_item.sc_asis_plan_fabric_item_id
+  WHERE v_asis_plan_fabric_item.custom = 'Y'::bpchar;
+
+
+CREATE OR REPLACE VIEW vw_cat_custom_material AS 
+ SELECT custom_material_item.sc_custom_plan_material_item_id,
+    custom_material_item.sc_asis_plan_material_item_id,
+    custom_material_item.material_total_quantity,
+    custom_material_item.material_issue_min_date,
+    custom_material_item.material_issue_max_date,
+    custom_material_item.material_delivery_min_date,
+    custom_material_item.material_delivery_max_date,
+    custom_material_item.dept_changed,
+    custom_material_item.is_delete,
+    custom_material_item.created_date,
+    custom_material_item.updated_date,
+    custom_material_item.created_by,
+    custom_material_item.updated_by,
+    custom_material_item.transaction_id
+   FROM vw_sc_dept_item_disp_asis_material v_asis_plan_material_item
+     JOIN sc_cat_plan_items_custom_material custom_material_item ON v_asis_plan_material_item.sc_asis_plan_material_item_id = custom_material_item.sc_asis_plan_material_item_id
+  WHERE v_asis_plan_material_item.custom = 'Y'::bpchar;
+
+
+CREATE OR REPLACE VIEW vw_cat_custom_print AS 
+ SELECT custom_print_item.sc_custom_plan_print_item_id,
+    custom_print_item.sc_asis_plan_print_item_id,
+    custom_print_item.print_total_length_metre,
+    custom_print_item.print_total_width_inches,
+    custom_print_item.print_total_pcs,
+    custom_print_item.print_total_measurement,
+    custom_print_item.print_issue_min_date,
+    custom_print_item.print_issue_max_date,
+    custom_print_item.print_delivery_min_date,
+    custom_print_item.print_delivery_max_date,
+    custom_print_item.dept_changed,
+    custom_print_item.is_delete,
+    custom_print_item.created_date,
+    custom_print_item.updated_date,
+    custom_print_item.created_by,
+    custom_print_item.updated_by,
+    custom_print_item.transaction_id
+   FROM vw_sc_dept_item_disp_asis_print v_asis_plan_print_item
+     JOIN sc_cat_plan_items_custom_print custom_print_item ON v_asis_plan_print_item.sc_asis_plan_print_item_id = custom_print_item.sc_asis_plan_print_item_id
+  WHERE v_asis_plan_print_item.custom = 'Y'::bpchar;
+
+
+CREATE OR REPLACE VIEW vw_notification_asis_cat_custom_dye AS 
+ SELECT v_asis_dye.category_planning_id,
+    v_asis_dye.product_codes,
+    v_asis_dye.production_type,
+    v_asis_dye.sc_planning_main_item_id,
+    v_asis_dye.plan_item_code,
+    v_asis_dye.transaction_id,
+    v_asis_dye.total_quantity,
+    v_asis_dye.raw_material_min_date,
+    v_asis_dye.raw_material_max_date,
+    v_asis_dye.style_item_code,
+    v_asis_dye.category_name,
+    v_asis_dye.style_item_name,
+    v_asis_dye.style_code,
+    v_asis_dye.color_code,
+    v_asis_dye.color,
+    v_asis_dye.style_item_quantity,
+    v_asis_dye.style_item_std_unit,
+    v_asis_dye.style_total_cost,
+    v_asis_dye.style_ccode_id,
+    v_asis_dye.item_code,
+    v_asis_dye.item_name,
+    v_asis_dye.item_quantity,
+    v_asis_dye.item_std_unit,
+    v_asis_dye.dye_code,
+    v_asis_dye.dye_colour_name,
+    v_asis_dye.generic_color_name,
+    v_asis_dye.dye_process_name,
+    v_asis_dye.num_colours,
+    v_asis_dye.color_hex_codes,
+    v_asis_dye.length_metre,
+    v_asis_dye.width_inches,
+    v_asis_dye.pcs,
+    v_asis_dye.total_measurement,
+    v_asis_dye.total_cost,
+    v_asis_dye.sc_asis_plan_dye_item_id,
+    v_asis_dye.dye_trans_id,
+    v_asis_dye.asis_dye_total_length_metre,
+    v_asis_dye.asis_dye_total_width_inch,
+    v_asis_dye.asis_dye_total_pcs,
+    v_asis_dye.asis_dye_total_measurement,
+    v_asis_dye.dye_issue_min_date,
+    v_asis_dye.dye_issue_max_date,
+    v_asis_dye.dye_delivery_min_date,
+    v_asis_dye.dye_delivery_max_date,
+    v_asis_dye.fabric_code,
+    v_asis_dye.fabric_name,
+    v_asis_dye.fabric_type,
+    v_asis_dye.sent_for_approval,
+    v_asis_dye.item_approved,
+    v_asis_dye.custom,
+    v_asis_dye.dept_changed AS asis_dept_changed,
+    sub_custom.dept_changed AS cat_custom_dept_changed,
+    sub_custom.cat_custom_plan_dye_item_id,
+    sub_custom.cat_custom_transaction_id,
+    sub_custom.cat_custom_dye_total_length_metre,
+    sub_custom.cat_custom_dye_total_width_inch,
+    sub_custom.cat_custom_dye_total_pcs,
+    sub_custom.cat_custom_dye_total_measurement,
+    sub_custom.cat_custom_dye_issue_min_date,
+    sub_custom.cat_custom_dye_issue_max_date,
+    sub_custom.cat_custom_dye_delivery_min_date,
+    sub_custom.cat_custom_dye_delivery_max_date,
+    v_asis_dye.dye_item_approved
+   FROM vw_sc_dept_item_disp_asis_dye v_asis_dye
+     LEFT JOIN ( SELECT cat_custom_dye.sc_custom_plan_dye_item_id AS cat_custom_plan_dye_item_id,
+            cat_custom_dye.transaction_id AS cat_custom_transaction_id,
+            cat_custom_dye.dept_changed,
+            cat_custom_dye.dye_total_length_metre AS cat_custom_dye_total_length_metre,
+            cat_custom_dye.dye_total_width_inches AS cat_custom_dye_total_width_inch,
+            cat_custom_dye.dye_total_pcs AS cat_custom_dye_total_pcs,
+            cat_custom_dye.dye_total_measurement AS cat_custom_dye_total_measurement,
+            cat_custom_dye.dye_issue_max_date AS cat_custom_dye_issue_min_date,
+            cat_custom_dye.dye_issue_max_date AS cat_custom_dye_issue_max_date,
+            cat_custom_dye.dye_delivery_min_date AS cat_custom_dye_delivery_min_date,
+            cat_custom_dye.dye_delivery_max_date AS cat_custom_dye_delivery_max_date
+           FROM vw_cat_custom_dye cat_custom_dye) sub_custom ON sub_custom.cat_custom_transaction_id::text = v_asis_dye.transaction_id::text;
+
+
+CREATE OR REPLACE VIEW vw_notification_asis_cat_custom_embroidery AS 
+ SELECT v_asis_embrd.category_planning_id,
+    v_asis_embrd.product_codes,
+    v_asis_embrd.production_type,
+    v_asis_embrd.sc_planning_main_item_id,
+    v_asis_embrd.plan_item_code,
+    v_asis_embrd.transaction_id,
+    v_asis_embrd.total_quantity,
+    v_asis_embrd.raw_material_min_date,
+    v_asis_embrd.raw_material_max_date,
+    v_asis_embrd.style_item_code,
+    v_asis_embrd.category_name,
+    v_asis_embrd.style_item_name,
+    v_asis_embrd.style_code,
+    v_asis_embrd.color_code,
+    v_asis_embrd.color,
+    v_asis_embrd.style_item_quantity,
+    v_asis_embrd.style_item_std_unit,
+    v_asis_embrd.style_total_cost,
+    v_asis_embrd.style_ccode_id,
+    v_asis_embrd.item_code,
+    v_asis_embrd.item_name,
+    v_asis_embrd.item_quantity,
+    v_asis_embrd.item_std_unit,
+    v_asis_embrd.embroidery_code,
+    v_asis_embrd.embroidery_description,
+    v_asis_embrd.embroidery_photo_path,
+    v_asis_embrd.vendor_code,
+    v_asis_embrd.embrd_std_unit,
+    v_asis_embrd.fabric_code,
+    v_asis_embrd.fabric_base_colour,
+    v_asis_embrd.fabric_metre,
+    v_asis_embrd.fabric_inches,
+    v_asis_embrd.fabric_pcs,
+    v_asis_embrd.material_reference,
+    v_asis_embrd.metre,
+    v_asis_embrd.pcs,
+    v_asis_embrd.embroidery_set,
+    v_asis_embrd.line,
+    v_asis_embrd.length_inch1,
+    v_asis_embrd.width_inch2,
+    v_asis_embrd.height_inch3,
+    v_asis_embrd.total_measurement,
+    v_asis_embrd.total_cost,
+    v_asis_embrd.sc_asis_plan_embrd_item_id,
+    v_asis_embrd.embrd_trans_id,
+    v_asis_embrd.asis_embroidery_total_metre,
+    v_asis_embrd.asis_embroidery_total_pcs,
+    v_asis_embrd.asis_embroidery_total_set,
+    v_asis_embrd.asis_embroidery_total_line,
+    v_asis_embrd.asis_embroidery_total_length_inch1,
+    v_asis_embrd.asis_embroidery_total_width_inch2,
+    v_asis_embrd.asis_embroidery_total_height_inch3,
+    v_asis_embrd.asis_embroidery_total_measurement,
+    v_asis_embrd.embroidery_issue_min_date,
+    v_asis_embrd.embroidery_issue_max_date,
+    v_asis_embrd.embroidery_delivery_min_date,
+    v_asis_embrd.embroidery_delivery_max_date,
+    v_asis_embrd.fabric_name,
+    v_asis_embrd.custom,
+    v_asis_embrd.sent_for_approval,
+    v_asis_embrd.item_approved,
+    v_asis_embrd.dept_changed AS asis_dept_changed,
+    sub_custom.dept_changed AS cat_custom_dept_changed,
+    sub_custom.cat_custom_plan_embrd_item_id,
+    sub_custom.cat_custom_transaction_id,
+    sub_custom.cat_custom_embrd_total_metre,
+    sub_custom.cat_custom_embrd_total_pcs,
+    sub_custom.cat_custom_embrd_total_set,
+    sub_custom.cat_custom_embrd_total_line,
+    sub_custom.cat_custom_embrd_total_length_inch1,
+    sub_custom.cat_custom_embrd_total_width_inch2,
+    sub_custom.cat_custom_embrd_total_height_inch3,
+    sub_custom.cat_custom_embrd_total_measurement,
+    sub_custom.cat_custom_embrd_issue_min_date,
+    sub_custom.cat_custom_embrd_issue_max_date,
+    sub_custom.cat_custom_embrd_delivery_min_date,
+    sub_custom.cat_custom_embrd_delivery_max_date,
+    v_asis_embrd.embroidery_item_approved
+   FROM vw_sc_dept_item_disp_asis_embroidery v_asis_embrd
+     LEFT JOIN ( SELECT cat_custom_embrd.sc_custom_plan_embd_item_id AS cat_custom_plan_embrd_item_id,
+            cat_custom_embrd.transaction_id AS cat_custom_transaction_id,
+            cat_custom_embrd.dept_changed,
+            cat_custom_embrd.embroidery_total_metre AS cat_custom_embrd_total_metre,
+            cat_custom_embrd.embroidery_total_pcs AS cat_custom_embrd_total_pcs,
+            cat_custom_embrd.embroidery_total_set AS cat_custom_embrd_total_set,
+            cat_custom_embrd.embroidery_total_line AS cat_custom_embrd_total_line,
+            cat_custom_embrd.embroidery_total_length_inch1 AS cat_custom_embrd_total_length_inch1,
+            cat_custom_embrd.embroidery_total_width_inch2 AS cat_custom_embrd_total_width_inch2,
+            cat_custom_embrd.embroidery_total_height_inch3 AS cat_custom_embrd_total_height_inch3,
+            cat_custom_embrd.embroidery_total_measurement AS cat_custom_embrd_total_measurement,
+            cat_custom_embrd.embroidery_issue_min_date AS cat_custom_embrd_issue_min_date,
+            cat_custom_embrd.embroidery_issue_max_date AS cat_custom_embrd_issue_max_date,
+            cat_custom_embrd.embroidery_delivery_min_date AS cat_custom_embrd_delivery_min_date,
+            cat_custom_embrd.embroidery_delivery_max_date AS cat_custom_embrd_delivery_max_date
+           FROM vw_cat_custom_embroidery cat_custom_embrd) sub_custom ON sub_custom.cat_custom_transaction_id::text = v_asis_embrd.transaction_id::text;
+
+CREATE OR REPLACE VIEW vw_notification_asis_cat_custom_fabric AS 
+ SELECT v_asis_fabric.category_planning_id,
+    v_asis_fabric.product_codes,
+    v_asis_fabric.production_type,
+    v_asis_fabric.sc_planning_main_item_id,
+    v_asis_fabric.plan_item_code,
+    v_asis_fabric.transaction_id,
+    v_asis_fabric.total_quantity,
+    v_asis_fabric.raw_material_min_date,
+    v_asis_fabric.raw_material_max_date,
+    v_asis_fabric.style_item_code,
+    v_asis_fabric.category_name,
+    v_asis_fabric.style_item_name,
+    v_asis_fabric.style_code,
+    v_asis_fabric.color_code,
+    v_asis_fabric.color,
+    v_asis_fabric.style_item_quantity,
+    v_asis_fabric.style_item_std_unit,
+    v_asis_fabric.style_total_cost,
+    v_asis_fabric.style_ccode_id,
+    v_asis_fabric.item_code,
+    v_asis_fabric.item_name,
+    v_asis_fabric.quantity,
+    v_asis_fabric.item_std_unit,
+    v_asis_fabric.fabric_code,
+    v_asis_fabric.fabric_name,
+    v_asis_fabric.fabric_type,
+    v_asis_fabric.fabric_std_unit,
+    v_asis_fabric.unit_std_width,
+    v_asis_fabric.length_metre,
+    v_asis_fabric.width_inch,
+    v_asis_fabric.shrinkage_metre,
+    v_asis_fabric.pcs,
+    v_asis_fabric.total_measurement,
+    v_asis_fabric.sc_asis_plan_fabric_item_id,
+    v_asis_fabric.fab_trans_id,
+    v_asis_fabric.asis_fabric_total_length_metre,
+    v_asis_fabric.asis_fabric_total_width_inch,
+    v_asis_fabric.asis_fabric_total_shrinkage_metre,
+    v_asis_fabric.asis_fabric_total_pcs,
+    v_asis_fabric.asis_fabric_total_measurement,
+    v_asis_fabric.fabric_issue_min_date,
+    v_asis_fabric.fabric_issue_max_date,
+    v_asis_fabric.fabric_delivery_min_date,
+    v_asis_fabric.fabric_delivery_max_date,
+    v_asis_fabric.sent_for_approval,
+    v_asis_fabric.item_approved,
+    v_asis_fabric.custom,
+    v_asis_fabric.dept_changed AS asis_dept_changed,
+    sub_custom.dept_changed AS cat_custom_dept_changed,
+    sub_custom.cat_custom_plan_fabric_item_id,
+    sub_custom.cat_custom_transaction_id,
+    sub_custom.cat_custom_fabric_total_length_metre,
+    sub_custom.cat_custom_fabric_total_width_inch,
+    sub_custom.cat_custom_fabric_total_shrinkage_metre,
+    sub_custom.cat_custom_fabric_total_pcs,
+    sub_custom.cat_custom_fabric_total_measurement,
+    sub_custom.cat_custom_fabric_issue_min_date,
+    sub_custom.cat_custom_fabric_issue_max_date,
+    sub_custom.cat_custom_fabric_delivery_min_date,
+    sub_custom.cat_custom_fabric_delivery_max_date,
+    v_asis_fabric.fabric_item_approved
+   FROM vw_sc_dept_item_disp_asis_fabric v_asis_fabric
+     LEFT JOIN ( SELECT cat_custom_fabric.sc_custom_plan_fabric_item_id AS cat_custom_plan_fabric_item_id,
+            cat_custom_fabric.transaction_id AS cat_custom_transaction_id,
+            cat_custom_fabric.dept_changed,
+            cat_custom_fabric.fabric_total_length_metre AS cat_custom_fabric_total_length_metre,
+            cat_custom_fabric.fabric_total_width_inch AS cat_custom_fabric_total_width_inch,
+            cat_custom_fabric.fabric_total_shrinkage_metre AS cat_custom_fabric_total_shrinkage_metre,
+            cat_custom_fabric.fabric_total_pcs AS cat_custom_fabric_total_pcs,
+            cat_custom_fabric.fabric_total_measurement AS cat_custom_fabric_total_measurement,
+            cat_custom_fabric.fabric_issue_min_date AS cat_custom_fabric_issue_min_date,
+            cat_custom_fabric.fabric_issue_max_date AS cat_custom_fabric_issue_max_date,
+            cat_custom_fabric.fabric_delivery_min_date AS cat_custom_fabric_delivery_min_date,
+            cat_custom_fabric.fabric_delivery_max_date AS cat_custom_fabric_delivery_max_date
+           FROM vw_cat_custom_fabric cat_custom_fabric) sub_custom ON sub_custom.cat_custom_transaction_id::text = v_asis_fabric.transaction_id::text;
+
+
+CREATE OR REPLACE VIEW vw_notification_asis_cat_custom_material AS 
+ SELECT v_asis_material.category_planning_id,
+    v_asis_material.product_codes,
+    v_asis_material.production_type,
+    v_asis_material.sc_planning_main_item_id,
+    v_asis_material.plan_item_code,
+    v_asis_material.transaction_id,
+    v_asis_material.total_quantity,
+    v_asis_material.raw_material_min_date,
+    v_asis_material.raw_material_max_date,
+    v_asis_material.style_item_code,
+    v_asis_material.category_name,
+    v_asis_material.style_item_name,
+    v_asis_material.style_code,
+    v_asis_material.color_code,
+    v_asis_material.color,
+    v_asis_material.style_item_quantity,
+    v_asis_material.style_item_std_unit,
+    v_asis_material.style_total_cost,
+    v_asis_material.style_ccode_id,
+    v_asis_material.item_code,
+    v_asis_material.item_name,
+    v_asis_material.item_quantity,
+    v_asis_material.item_std_unit,
+    v_asis_material.material_code,
+    v_asis_material.material_name,
+    v_asis_material.material_colour,
+    v_asis_material.material_type,
+    v_asis_material.material_std_unit,
+    v_asis_material.material_quantity,
+    v_asis_material.sc_asis_plan_material_item_id,
+    v_asis_material.mat_trans_id,
+    v_asis_material.asis_material_total_quantity,
+    v_asis_material.material_issue_min_date,
+    v_asis_material.material_issue_max_date,
+    v_asis_material.material_delivery_min_date,
+    v_asis_material.material_delivery_max_date,
+    v_asis_material.custom,
+    v_asis_material.sent_for_approval,
+    v_asis_material.item_approved,
+    v_asis_material.dept_changed AS asis_dept_changed,
+    sub_custom.dept_changed AS cat_custom_dept_changed,
+    sub_custom.cat_custom_plan_material_item_id,
+    sub_custom.cat_custom_transaction_id,
+    sub_custom.cat_custom_material_total_quantity,
+    sub_custom.cat_custom_material_issue_min_date,
+    sub_custom.cat_custom_material_issue_max_date,
+    sub_custom.cat_custom_material_delivery_min_date,
+    sub_custom.cat_custom_material_delivery_max_date,
+    v_asis_material.material_item_approved
+   FROM vw_sc_dept_item_disp_asis_material v_asis_material
+     LEFT JOIN ( SELECT cat_custom_material.transaction_id AS cat_custom_transaction_id,
+            cat_custom_material.dept_changed,
+            cat_custom_material.sc_custom_plan_material_item_id AS cat_custom_plan_material_item_id,
+            cat_custom_material.material_total_quantity AS cat_custom_material_total_quantity,
+            cat_custom_material.material_issue_max_date AS cat_custom_material_issue_min_date,
+            cat_custom_material.material_issue_max_date AS cat_custom_material_issue_max_date,
+            cat_custom_material.material_delivery_min_date AS cat_custom_material_delivery_min_date,
+            cat_custom_material.material_delivery_max_date AS cat_custom_material_delivery_max_date
+           FROM vw_cat_custom_material cat_custom_material) sub_custom ON sub_custom.cat_custom_transaction_id::text = v_asis_material.transaction_id::text;
+
+
+CREATE OR REPLACE VIEW vw_notification_asis_cat_custom_print AS 
+ SELECT v_asis_print.category_planning_id,
+    v_asis_print.product_codes,
+    v_asis_print.production_type,
+    v_asis_print.sc_planning_main_item_id,
+    v_asis_print.plan_item_code,
+    v_asis_print.transaction_id,
+    v_asis_print.total_quantity,
+    v_asis_print.raw_material_min_date,
+    v_asis_print.raw_material_max_date,
+    v_asis_print.style_item_code,
+    v_asis_print.category_name,
+    v_asis_print.style_item_name,
+    v_asis_print.style_code,
+    v_asis_print.color_code,
+    v_asis_print.color,
+    v_asis_print.style_item_quantity,
+    v_asis_print.style_item_std_unit,
+    v_asis_print.style_total_cost,
+    v_asis_print.style_ccode_id,
+    v_asis_print.item_code,
+    v_asis_print.item_name,
+    v_asis_print.item_quantity,
+    v_asis_print.item_std_unit,
+    v_asis_print.print_code,
+    v_asis_print.printing_type,
+    v_asis_print.print_colour,
+    v_asis_print.num_screens_blocks,
+    v_asis_print.num_colours,
+    v_asis_print.print_photo,
+    v_asis_print.print_metre,
+    v_asis_print.print_inches,
+    v_asis_print.pcs,
+    v_asis_print.total_measurement,
+    v_asis_print.total_cost,
+    v_asis_print.sc_asis_plan_print_item_id,
+    v_asis_print.print_trans_id,
+    v_asis_print.asis_print_total_length_metre,
+    v_asis_print.asis_print_total_width_inch,
+    v_asis_print.asis_print_total_pcs,
+    v_asis_print.asis_print_total_measurement,
+    v_asis_print.print_issue_min_date,
+    v_asis_print.print_issue_max_date,
+    v_asis_print.print_delivery_min_date,
+    v_asis_print.print_delivery_max_date,
+    v_asis_print.custom,
+    v_asis_print.fabric_name,
+    v_asis_print.sent_for_approval,
+    v_asis_print.item_approved,
+    v_asis_print.dept_changed AS asis_dept_changed,
+    sub_custom.dept_changed AS cat_custom_dept_changed,
+    sub_custom.cat_custom_plan_print_item_id,
+    sub_custom.cat_custom_transaction_id,
+    sub_custom.cat_custom_print_total_length_metre,
+    sub_custom.cat_custom_print_total_width_inch,
+    sub_custom.cat_custom_print_total_pcs,
+    sub_custom.cat_custom_print_total_measurement,
+    sub_custom.cat_custom_print_issue_min_date,
+    sub_custom.cat_custom_print_issue_max_date,
+    sub_custom.cat_custom_print_delivery_min_date,
+    sub_custom.cat_custom_print_delivery_max_date,
+    v_asis_print.print_item_approved
+   FROM vw_sc_dept_item_disp_asis_print v_asis_print
+     LEFT JOIN ( SELECT cat_custom_print.sc_custom_plan_print_item_id AS cat_custom_plan_print_item_id,
+            cat_custom_print.transaction_id AS cat_custom_transaction_id,
+            cat_custom_print.dept_changed,
+            cat_custom_print.print_total_length_metre AS cat_custom_print_total_length_metre,
+            cat_custom_print.print_total_width_inches AS cat_custom_print_total_width_inch,
+            cat_custom_print.print_total_pcs AS cat_custom_print_total_pcs,
+            cat_custom_print.print_total_measurement AS cat_custom_print_total_measurement,
+            cat_custom_print.print_issue_max_date AS cat_custom_print_issue_min_date,
+            cat_custom_print.print_issue_max_date AS cat_custom_print_issue_max_date,
+            cat_custom_print.print_delivery_min_date AS cat_custom_print_delivery_min_date,
+            cat_custom_print.print_delivery_max_date AS cat_custom_print_delivery_max_date
+           FROM vw_cat_custom_print cat_custom_print) sub_custom ON sub_custom.cat_custom_transaction_id::text = v_asis_print.transaction_id::text;
+
+
+CREATE OR REPLACE VIEW vw_notification_asis_dept_custom_dye AS 
+ SELECT v_asis_dye.category_planning_id,
+    v_asis_dye.product_codes,
+    v_asis_dye.production_type,
+    v_asis_dye.sc_planning_main_item_id,
+    v_asis_dye.plan_item_code,
+    v_asis_dye.transaction_id,
+    v_asis_dye.total_quantity,
+    v_asis_dye.raw_material_min_date,
+    v_asis_dye.raw_material_max_date,
+    v_asis_dye.style_item_code,
+    v_asis_dye.category_name,
+    v_asis_dye.style_item_name,
+    v_asis_dye.style_code,
+    v_asis_dye.color_code,
+    v_asis_dye.color,
+    v_asis_dye.style_item_quantity,
+    v_asis_dye.style_item_std_unit,
+    v_asis_dye.style_total_cost,
+    v_asis_dye.style_ccode_id,
+    v_asis_dye.item_code,
+    v_asis_dye.item_name,
+    v_asis_dye.item_quantity,
+    v_asis_dye.item_std_unit,
+    v_asis_dye.dye_code,
+    v_asis_dye.dye_colour_name,
+    v_asis_dye.generic_color_name,
+    v_asis_dye.dye_process_name,
+    v_asis_dye.num_colours,
+    v_asis_dye.color_hex_codes,
+    v_asis_dye.length_metre,
+    v_asis_dye.width_inches,
+    v_asis_dye.pcs,
+    v_asis_dye.total_measurement,
+    v_asis_dye.total_cost,
+    v_asis_dye.sc_asis_plan_dye_item_id,
+    v_asis_dye.dye_trans_id,
+    v_asis_dye.asis_dye_total_length_metre,
+    v_asis_dye.asis_dye_total_width_inch,
+    v_asis_dye.asis_dye_total_pcs,
+    v_asis_dye.asis_dye_total_measurement,
+    v_asis_dye.dye_issue_min_date,
+    v_asis_dye.dye_issue_max_date,
+    v_asis_dye.dye_delivery_min_date,
+    v_asis_dye.dye_delivery_max_date,
+    v_asis_dye.custom,
+    v_asis_dye.fabric_code,
+    v_asis_dye.fabric_name,
+    v_asis_dye.fabric_type,
+    v_asis_dye.sent_for_approval,
+    v_asis_dye.item_approved,
+    asis_dept_custom_dye.sc_custom_plan_dye_item_id,
+    asis_dept_custom_dye.sc_custom_dept_plan_dye_item_id,
+    asis_dept_custom_dye.dye_total_length_metre AS dept_custom_dye_total_length_metre,
+    asis_dept_custom_dye.dye_total_width_inches AS dept_custom_dye_total_width_inch,
+    asis_dept_custom_dye.dye_total_pcs AS dept_custom_dye_total_pcs,
+    asis_dept_custom_dye.dye_total_measurement AS dept_custom_dye_total_measurement,
+    asis_dept_custom_dye.dye_issue_min_date AS dept_custom_dye_issue_min_date,
+    asis_dept_custom_dye.dye_issue_max_date AS dept_custom_dye_issue_max_date,
+    asis_dept_custom_dye.dye_delivery_min_date AS dept_custom_dye_delivery_min_date,
+    asis_dept_custom_dye.dye_delivery_max_date AS dept_custom_dye_delivery_max_date,
+    v_asis_dye.dye_item_approved
+   FROM vw_sc_dept_item_disp_asis_dye v_asis_dye
+     JOIN sc_dept_plan_items_custom_dye asis_dept_custom_dye ON asis_dept_custom_dye.transaction_id::text = v_asis_dye.transaction_id::text;
+
+
+
+CREATE OR REPLACE VIEW vw_notification_asis_dept_custom_embroidery AS 
+ SELECT v_asis_embrd.category_planning_id,
+    v_asis_embrd.product_codes,
+    v_asis_embrd.production_type,
+    v_asis_embrd.sc_planning_main_item_id,
+    v_asis_embrd.plan_item_code,
+    v_asis_embrd.transaction_id,
+    v_asis_embrd.total_quantity,
+    v_asis_embrd.raw_material_min_date,
+    v_asis_embrd.raw_material_max_date,
+    v_asis_embrd.style_item_code,
+    v_asis_embrd.category_name,
+    v_asis_embrd.style_item_name,
+    v_asis_embrd.style_code,
+    v_asis_embrd.color_code,
+    v_asis_embrd.color,
+    v_asis_embrd.style_item_quantity,
+    v_asis_embrd.style_item_std_unit,
+    v_asis_embrd.style_total_cost,
+    v_asis_embrd.style_ccode_id,
+    v_asis_embrd.item_code,
+    v_asis_embrd.item_name,
+    v_asis_embrd.item_quantity,
+    v_asis_embrd.item_std_unit,
+    v_asis_embrd.embroidery_code,
+    v_asis_embrd.embroidery_description,
+    v_asis_embrd.embroidery_photo_path,
+    v_asis_embrd.vendor_code,
+    v_asis_embrd.embrd_std_unit,
+    v_asis_embrd.fabric_code,
+    v_asis_embrd.fabric_base_colour,
+    v_asis_embrd.fabric_metre,
+    v_asis_embrd.fabric_inches,
+    v_asis_embrd.fabric_pcs,
+    v_asis_embrd.material_reference,
+    v_asis_embrd.metre,
+    v_asis_embrd.pcs,
+    v_asis_embrd.embroidery_set,
+    v_asis_embrd.line,
+    v_asis_embrd.length_inch1,
+    v_asis_embrd.width_inch2,
+    v_asis_embrd.height_inch3,
+    v_asis_embrd.total_measurement,
+    v_asis_embrd.total_cost,
+    v_asis_embrd.sc_asis_plan_embrd_item_id,
+    v_asis_embrd.embrd_trans_id,
+    v_asis_embrd.asis_embroidery_total_metre,
+    v_asis_embrd.asis_embroidery_total_pcs,
+    v_asis_embrd.asis_embroidery_total_set,
+    v_asis_embrd.asis_embroidery_total_line,
+    v_asis_embrd.asis_embroidery_total_length_inch1,
+    v_asis_embrd.asis_embroidery_total_width_inch2,
+    v_asis_embrd.asis_embroidery_total_height_inch3,
+    v_asis_embrd.asis_embroidery_total_measurement,
+    v_asis_embrd.embroidery_issue_min_date,
+    v_asis_embrd.embroidery_issue_max_date,
+    v_asis_embrd.embroidery_delivery_min_date,
+    v_asis_embrd.embroidery_delivery_max_date,
+    v_asis_embrd.custom,
+    v_asis_embrd.fabric_name,
+    v_asis_embrd.sent_for_approval,
+    v_asis_embrd.item_approved,
+    asis_dept_custom_embrd.sc_custom_plan_embd_item_id,
+    asis_dept_custom_embrd.sc_custom_dept_plan_emrd_item_id,
+    asis_dept_custom_embrd.embroidery_total_metre AS dept_custom_embrd_total_metre,
+    asis_dept_custom_embrd.embroidery_total_pcs AS dept_custom_embrd_total_pcs,
+    asis_dept_custom_embrd.embroidery_total_set AS dept_custom_embrd_total_set,
+    asis_dept_custom_embrd.embroidery_total_line AS dept_custom_embrd_total_line,
+    asis_dept_custom_embrd.embroidery_total_length_inch1 AS dept_custom_embrd_total_length_inch1,
+    asis_dept_custom_embrd.embroidery_total_width_inch2 AS dept_custom_embrd_total_width_inch2,
+    asis_dept_custom_embrd.embroidery_total_height_inch3 AS dept_custom_embrd_total_height_inch3,
+    asis_dept_custom_embrd.embroidery_total_measurement AS dept_custom_embrd_total_measurement,
+    asis_dept_custom_embrd.embroidery_issue_min_date AS dept_custom_embrd_issue_min_date,
+    asis_dept_custom_embrd.embroidery_issue_max_date AS dept_custom_embrd_issue_max_date,
+    asis_dept_custom_embrd.embroidery_delivery_min_date AS dept_custom_embrd_delivery_min_date,
+    asis_dept_custom_embrd.embroidery_delivery_max_date AS dept_custom_embrd_delivery_max_date,
+    v_asis_embrd.embroidery_item_approved
+   FROM vw_sc_dept_item_disp_asis_embroidery v_asis_embrd
+     JOIN sc_dept_plan_items_custom_embrd asis_dept_custom_embrd ON asis_dept_custom_embrd.transaction_id::text = v_asis_embrd.transaction_id::text;
+
+
+CREATE OR REPLACE VIEW vw_notification_asis_dept_custom_fabric AS 
+ SELECT v_asis_fabric.category_planning_id,
+    v_asis_fabric.product_codes,
+    v_asis_fabric.production_type,
+    v_asis_fabric.sc_planning_main_item_id,
+    v_asis_fabric.plan_item_code,
+    v_asis_fabric.transaction_id,
+    v_asis_fabric.total_quantity,
+    v_asis_fabric.raw_material_min_date,
+    v_asis_fabric.raw_material_max_date,
+    v_asis_fabric.style_item_code,
+    v_asis_fabric.category_name,
+    v_asis_fabric.style_item_name,
+    v_asis_fabric.style_code,
+    v_asis_fabric.color_code,
+    v_asis_fabric.color,
+    v_asis_fabric.style_item_quantity,
+    v_asis_fabric.style_item_std_unit,
+    v_asis_fabric.style_total_cost,
+    v_asis_fabric.style_ccode_id,
+    v_asis_fabric.item_code,
+    v_asis_fabric.item_name,
+    v_asis_fabric.quantity,
+    v_asis_fabric.item_std_unit,
+    v_asis_fabric.fabric_code,
+    v_asis_fabric.fabric_name,
+    v_asis_fabric.fabric_type,
+    v_asis_fabric.fabric_std_unit,
+    v_asis_fabric.unit_std_width,
+    v_asis_fabric.length_metre,
+    v_asis_fabric.width_inch,
+    v_asis_fabric.shrinkage_metre,
+    v_asis_fabric.pcs,
+    v_asis_fabric.total_measurement,
+    v_asis_fabric.sc_asis_plan_fabric_item_id,
+    v_asis_fabric.fab_trans_id,
+    v_asis_fabric.sent_for_approval,
+    v_asis_fabric.item_approved,
+    asis_dept_custom_fabric.sc_custom_plan_fabric_item_id,
+    asis_dept_custom_fabric.sc_custom_dept_plan_fabric_item_id,
+    asis_dept_custom_fabric.fabric_total_length_metre AS dept_custom_fabric_total_length_metre,
+    asis_dept_custom_fabric.fabric_total_width_inch AS dept_custom_fabric_total_width_inch,
+    asis_dept_custom_fabric.fabric_total_shrinkage_metre AS dept_custom_fabric_total_shrinkage_metre,
+    asis_dept_custom_fabric.fabric_total_pcs AS dept_custom_fabric_total_pcs,
+    asis_dept_custom_fabric.fabric_total_measurement AS dept_custom_fabric_total_measurement,
+    asis_dept_custom_fabric.fabric_issue_min_date AS dept_custom_fabric_issue_min_date,
+    asis_dept_custom_fabric.fabric_issue_max_date AS dept_custom_fabric_issue_max_date,
+    asis_dept_custom_fabric.fabric_delivery_min_date AS dept_custom_fabric_delivery_min_date,
+    asis_dept_custom_fabric.fabric_delivery_max_date AS dept_custom_fabric_delivery_max_date,
+    v_asis_fabric.fabric_item_approved
+   FROM vw_sc_dept_item_disp_asis_fabric v_asis_fabric
+     JOIN sc_dept_plan_items_custom_fabric asis_dept_custom_fabric ON asis_dept_custom_fabric.transaction_id::text = v_asis_fabric.transaction_id::text;
+
+
+CREATE OR REPLACE VIEW vw_notification_asis_dept_custom_material AS 
+ SELECT v_asis_material.category_planning_id,
+    v_asis_material.product_codes,
+    v_asis_material.production_type,
+    v_asis_material.sc_planning_main_item_id,
+    v_asis_material.plan_item_code,
+    v_asis_material.transaction_id,
+    v_asis_material.total_quantity,
+    v_asis_material.raw_material_min_date,
+    v_asis_material.raw_material_max_date,
+    v_asis_material.style_item_code,
+    v_asis_material.category_name,
+    v_asis_material.style_item_name,
+    v_asis_material.style_code,
+    v_asis_material.color_code,
+    v_asis_material.color,
+    v_asis_material.style_item_quantity,
+    v_asis_material.style_item_std_unit,
+    v_asis_material.style_total_cost,
+    v_asis_material.style_ccode_id,
+    v_asis_material.item_code,
+    v_asis_material.item_name,
+    v_asis_material.item_quantity,
+    v_asis_material.item_std_unit,
+    v_asis_material.material_code,
+    v_asis_material.material_name,
+    v_asis_material.material_colour,
+    v_asis_material.material_type,
+    v_asis_material.material_std_unit,
+    v_asis_material.material_quantity,
+    v_asis_material.sc_asis_plan_material_item_id,
+    v_asis_material.mat_trans_id,
+    v_asis_material.asis_material_total_quantity,
+    v_asis_material.material_issue_min_date,
+    v_asis_material.material_issue_max_date,
+    v_asis_material.material_delivery_min_date,
+    v_asis_material.material_delivery_max_date,
+    v_asis_material.custom,
+    v_asis_material.sent_for_approval,
+    v_asis_material.item_approved,
+    asis_dept_custom_material.sc_custom_plan_material_item_id,
+    asis_dept_custom_material.sc_custom_dept_plan_material_item_id,
+    asis_dept_custom_material.material_total_quantity AS dept_custom_material_total_quantity,
+    asis_dept_custom_material.material_issue_max_date AS dept_custom_material_issue_min_date,
+    asis_dept_custom_material.material_issue_max_date AS dept_custom_material_issue_max_date,
+    asis_dept_custom_material.material_delivery_min_date AS dept_custom_material_delivery_min_date,
+    asis_dept_custom_material.material_delivery_max_date AS dept_custom_material_delivery_max_date,
+    v_asis_material.material_item_approved
+   FROM vw_sc_dept_item_disp_asis_material v_asis_material
+     JOIN sc_dept_plan_items_custom_material asis_dept_custom_material ON asis_dept_custom_material.transaction_id::text = v_asis_material.transaction_id::text;
+
+
+
+CREATE OR REPLACE VIEW vw_notification_asis_dept_custom_print AS 
+ SELECT v_asis_print.category_planning_id,
+    v_asis_print.product_codes,
+    v_asis_print.production_type,
+    v_asis_print.sc_planning_main_item_id,
+    v_asis_print.plan_item_code,
+    v_asis_print.transaction_id,
+    v_asis_print.total_quantity,
+    v_asis_print.raw_material_min_date,
+    v_asis_print.raw_material_max_date,
+    v_asis_print.style_item_code,
+    v_asis_print.category_name,
+    v_asis_print.style_item_name,
+    v_asis_print.style_code,
+    v_asis_print.color_code,
+    v_asis_print.color,
+    v_asis_print.style_item_quantity,
+    v_asis_print.style_item_std_unit,
+    v_asis_print.style_total_cost,
+    v_asis_print.style_ccode_id,
+    v_asis_print.item_code,
+    v_asis_print.item_name,
+    v_asis_print.item_quantity,
+    v_asis_print.item_std_unit,
+    v_asis_print.print_code,
+    v_asis_print.printing_type,
+    v_asis_print.print_colour,
+    v_asis_print.num_screens_blocks,
+    v_asis_print.num_colours,
+    v_asis_print.print_photo,
+    v_asis_print.print_metre,
+    v_asis_print.print_inches,
+    v_asis_print.pcs,
+    v_asis_print.total_measurement,
+    v_asis_print.total_cost,
+    v_asis_print.sc_asis_plan_print_item_id,
+    v_asis_print.print_trans_id,
+    v_asis_print.asis_print_total_length_metre,
+    v_asis_print.asis_print_total_width_inch,
+    v_asis_print.asis_print_total_pcs,
+    v_asis_print.asis_print_total_measurement,
+    v_asis_print.print_issue_min_date,
+    v_asis_print.print_issue_max_date,
+    v_asis_print.print_delivery_min_date,
+    v_asis_print.print_delivery_max_date,
+    v_asis_print.custom,
+    v_asis_print.fabric_name,
+    v_asis_print.sent_for_approval,
+    v_asis_print.item_approved,
+    asis_dept_custom_print.sc_custom_plan_print_item_id,
+    asis_dept_custom_print.sc_custom_dept_plan_print_item_id,
+    asis_dept_custom_print.print_total_length_metre AS dept_custom_print_total_length_metre,
+    asis_dept_custom_print.print_total_width_inches AS dept_custom_print_total_width_inch,
+    asis_dept_custom_print.print_total_pcs AS dept_custom_print_total_pcs,
+    asis_dept_custom_print.print_total_measurement AS dept_custom_print_total_measurement,
+    asis_dept_custom_print.print_issue_min_date AS dept_custom_print_issue_min_date,
+    asis_dept_custom_print.print_issue_max_date AS dept_custom_print_issue_max_date,
+    asis_dept_custom_print.print_delivery_min_date AS dept_custom_print_delivery_min_date,
+    asis_dept_custom_print.print_delivery_max_date AS dept_custom_print_delivery_max_date,
+    v_asis_print.print_item_approved
+   FROM vw_sc_dept_item_disp_asis_print v_asis_print
+     JOIN sc_dept_plan_items_custom_print asis_dept_custom_print ON asis_dept_custom_print.transaction_id::text = v_asis_print.transaction_id::text;
+
+
+
+
+CREATE OR REPLACE VIEW vw_tracker_requisition_material AS 
+ SELECT vw_notification_material.category_planning_id,
+    vw_notification_material.product_codes,
+    vw_notification_material.production_type,
+    vw_notification_material.plan_item_code,
+    vw_notification_material.transaction_id,
+    vw_notification_material.category_name,
+    vw_notification_material.style_code,
+    vw_notification_material.color_code,
+    vw_notification_material.material_code,
+    vw_notification_material.material_name,
+    vw_notification_material.material_type,
+    vw_notification_material.material_colour,
+    vw_notification_material.material_std_unit,
+        CASE
+            WHEN vw_notification_material.custom = 'N'::bpchar THEN vw_notification_material.material_issue_min_date
+            WHEN vw_notification_material.custom = 'Y'::bpchar AND vw_notification_material.cat_custom_dept_changed = 'N'::bpchar THEN vw_notification_material.cat_custom_material_issue_min_date
+            WHEN vw_notification_material.custom = 'Y'::bpchar AND vw_notification_material.asis_dept_changed = 'Y'::bpchar THEN vw_notification_material.dept_custom_material_issue_min_date
+            ELSE NULL::date
+        END AS issue_min_date,
+        CASE
+            WHEN vw_notification_material.custom = 'N'::bpchar THEN vw_notification_material.material_issue_max_date
+            WHEN vw_notification_material.custom = 'Y'::bpchar AND vw_notification_material.cat_custom_dept_changed = 'N'::bpchar THEN vw_notification_material.cat_custom_material_issue_max_date
+            WHEN vw_notification_material.custom = 'Y'::bpchar AND vw_notification_material.asis_dept_changed = 'Y'::bpchar THEN vw_notification_material.dept_custom_material_issue_max_date
+            ELSE NULL::date
+        END AS issue_max_date,
+        CASE
+            WHEN vw_notification_material.custom = 'N'::bpchar THEN vw_notification_material.material_delivery_min_date
+            WHEN vw_notification_material.custom = 'Y'::bpchar AND vw_notification_material.cat_custom_dept_changed = 'N'::bpchar THEN vw_notification_material.cat_custom_material_delivery_min_date
+            WHEN vw_notification_material.custom = 'Y'::bpchar AND vw_notification_material.asis_dept_changed = 'Y'::bpchar THEN vw_notification_material.dept_custom_material_delivery_min_date
+            ELSE NULL::date
+        END AS delivery_min_date,
+        CASE
+            WHEN vw_notification_material.custom = 'N'::bpchar THEN vw_notification_material.material_delivery_max_date
+            WHEN vw_notification_material.custom = 'Y'::bpchar AND vw_notification_material.cat_custom_dept_changed = 'N'::bpchar THEN vw_notification_material.cat_custom_material_delivery_max_date
+            WHEN vw_notification_material.custom = 'Y'::bpchar AND vw_notification_material.asis_dept_changed = 'Y'::bpchar THEN vw_notification_material.dept_custom_material_delivery_max_date
+            ELSE NULL::date
+        END AS delivery_max_date,
+        CASE
+            WHEN vw_notification_material.custom = 'N'::bpchar THEN vw_notification_material.asis_material_total_quantity
+            WHEN vw_notification_material.custom = 'Y'::bpchar AND vw_notification_material.cat_custom_dept_changed = 'N'::bpchar THEN vw_notification_material.cat_custom_material_total_quantity
+            WHEN vw_notification_material.custom = 'Y'::bpchar AND vw_notification_material.asis_dept_changed = 'Y'::bpchar THEN vw_notification_material.dept_custom_material_total_quantity
+            ELSE NULL::double precision
+        END AS material_total_quantity,
+    vw_notification_material.sc_planning_main_item_id,
+    vw_notification_material.style_ccode_id,
+    vw_notification_material.sc_asis_plan_material_item_id,
+    vw_notification_material.cat_custom_plan_material_item_id,
+    vw_notification_material.sc_custom_dept_plan_material_item_id,
+    vw_notification_material.custom,
+    vw_notification_material.cat_custom_dept_changed,
+    vw_notification_material.asis_dept_changed,
+    vw_notification_material.item_approved,
+    material_item_approved
+   FROM ( SELECT cat.category_planning_id,
+            cat.product_codes,
+            cat.production_type,
+            cat.sc_planning_main_item_id,
+            cat.plan_item_code,
+            cat.transaction_id,
+            cat.total_quantity,
+            cat.raw_material_min_date,
+            cat.raw_material_max_date,
+            cat.style_item_code,
+            cat.category_name,
+            cat.style_item_name,
+            cat.style_code,
+            cat.color_code,
+            cat.color,
+            cat.style_item_quantity,
+            cat.style_item_std_unit,
+            cat.style_total_cost,
+            cat.style_ccode_id,
+            cat.item_code,
+            cat.item_name,
+            cat.item_quantity,
+            cat.item_std_unit,
+            cat.material_code,
+            cat.material_name,
+            cat.material_colour,
+            cat.material_type,
+            cat.material_std_unit,
+            cat.material_quantity,
+            cat.sc_asis_plan_material_item_id,
+            cat.mat_trans_id,
+            cat.asis_material_total_quantity,
+            cat.material_issue_min_date,
+            cat.material_issue_max_date,
+            cat.material_delivery_min_date,
+            cat.material_delivery_max_date,
+            cat.custom,
+            cat.sent_for_approval,
+            cat.item_approved,
+            cat.material_item_approved,
+            cat.asis_dept_changed,
+            cat.cat_custom_dept_changed,
+            cat.cat_custom_plan_material_item_id,
+            cat.cat_custom_transaction_id,
+            cat.cat_custom_material_total_quantity,
+            cat.cat_custom_material_issue_min_date,
+            cat.cat_custom_material_issue_max_date,
+            cat.cat_custom_material_delivery_min_date,
+            cat.cat_custom_material_delivery_max_date,
+            dept.sc_custom_dept_plan_material_item_id,
+            dept.dept_custom_material_total_quantity,
+            dept.dept_custom_material_issue_min_date,
+            dept.dept_custom_material_issue_max_date,
+            dept.dept_custom_material_delivery_min_date,
+            dept.dept_custom_material_delivery_max_date
+           FROM vw_notification_asis_cat_custom_material cat
+             LEFT JOIN vw_notification_asis_dept_custom_material dept ON cat.transaction_id::text = dept.transaction_id::text AND cat.cat_custom_plan_material_item_id = dept.sc_custom_plan_material_item_id) vw_notification_material
+  ORDER BY vw_notification_material.category_planning_id;
+
+
+CREATE OR REPLACE VIEW vw_tracker_requisition_dye AS 
+ SELECT sub.category_planning_id,
+    sub.product_codes,
+    sub.production_type,
+    sub.plan_item_code,
+    sub.transaction_id,
+    sub.category_name,
+    sub.style_code,
+    sub.color_code,
+    sub.dye_code,
+    sub.fabric_name,
+    sub.fabric_type,
+    sub.issue_min_date,
+    sub.issue_max_date,
+    sub.delivery_min_date,
+    sub.delivery_max_date,
+    sub.dye_total_length_metre,
+    sub.dye_total_width_inch,
+    sub.dye_total_pcs,
+    sub.dye_total_measurement,
+    sub.sc_planning_main_item_id,
+    sub.style_ccode_id,
+    sub.sc_asis_plan_dye_item_id,
+    sub.cat_custom_plan_dye_item_id,
+    sub.sc_custom_dept_plan_dye_item_id,
+    sub.custom,
+    sub.cat_custom_dept_changed,
+    sub.asis_dept_changed,
+    sub.item_approved,
+    dye_item_approved
+   FROM ( SELECT vw_req_dye.category_planning_id,
+            vw_req_dye.product_codes,
+            vw_req_dye.production_type,
+            vw_req_dye.plan_item_code,
+            vw_req_dye.transaction_id,
+            vw_req_dye.category_name,
+            vw_req_dye.style_code,
+            vw_req_dye.color_code,
+            vw_req_dye.dye_code,
+            vw_req_dye.fabric_name,
+            vw_req_dye.fabric_type,
+            vw_req_dye.issue_min_date,
+            vw_req_dye.issue_max_date,
+            vw_req_dye.delivery_min_date,
+            vw_req_dye.delivery_max_date,
+            vw_req_dye.dye_total_length_metre - COALESCE(req_dye.dye_length, 0::double precision) AS dye_total_length_metre,
+            vw_req_dye.dye_total_width_inch - COALESCE(req_dye.dye_width, 0::double precision) AS dye_total_width_inch,
+            vw_req_dye.dye_total_pcs - COALESCE(req_dye.dye_pcs, 0::bigint) AS dye_total_pcs,
+            vw_req_dye.dye_total_measurement - COALESCE(req_dye.dye_total_measurement, 0::double precision) AS dye_total_measurement,
+            vw_req_dye.sc_planning_main_item_id,
+            vw_req_dye.style_ccode_id,
+            vw_req_dye.sc_asis_plan_dye_item_id,
+            vw_req_dye.cat_custom_plan_dye_item_id,
+            vw_req_dye.sc_custom_dept_plan_dye_item_id,
+            vw_req_dye.custom,
+            vw_req_dye.cat_custom_dept_changed,
+            vw_req_dye.asis_dept_changed,
+            vw_req_dye.item_approved,
+            dye_item_approved
+           FROM ( SELECT vw_notification_dye.category_planning_id,
+                    vw_notification_dye.product_codes,
+                    vw_notification_dye.production_type,
+                    vw_notification_dye.plan_item_code,
+                    vw_notification_dye.transaction_id,
+                    vw_notification_dye.category_name,
+                    vw_notification_dye.style_code,
+                    vw_notification_dye.color_code,
+                    vw_notification_dye.dye_code,
+                    vw_notification_dye.fabric_name,
+                    vw_notification_dye.fabric_type,
+                        CASE
+                            WHEN vw_notification_dye.custom = 'N'::bpchar THEN vw_notification_dye.dye_issue_min_date
+                            WHEN vw_notification_dye.custom = 'Y'::bpchar AND vw_notification_dye.cat_custom_dept_changed = 'N'::bpchar THEN vw_notification_dye.cat_custom_dye_issue_min_date
+                            WHEN vw_notification_dye.custom = 'Y'::bpchar AND vw_notification_dye.asis_dept_changed = 'Y'::bpchar THEN vw_notification_dye.dept_custom_dye_issue_min_date
+                            ELSE NULL::date
+                        END AS issue_min_date,
+                        CASE
+                            WHEN vw_notification_dye.custom = 'N'::bpchar THEN vw_notification_dye.dye_issue_max_date
+                            WHEN vw_notification_dye.custom = 'Y'::bpchar AND vw_notification_dye.cat_custom_dept_changed = 'N'::bpchar THEN vw_notification_dye.cat_custom_dye_issue_max_date
+                            WHEN vw_notification_dye.custom = 'Y'::bpchar AND vw_notification_dye.asis_dept_changed = 'Y'::bpchar THEN vw_notification_dye.dept_custom_dye_issue_max_date
+                            ELSE NULL::date
+                        END AS issue_max_date,
+                        CASE
+                            WHEN vw_notification_dye.custom = 'N'::bpchar THEN vw_notification_dye.dye_delivery_min_date
+                            WHEN vw_notification_dye.custom = 'Y'::bpchar AND vw_notification_dye.cat_custom_dept_changed = 'N'::bpchar THEN vw_notification_dye.cat_custom_dye_delivery_min_date
+                            WHEN vw_notification_dye.custom = 'Y'::bpchar AND vw_notification_dye.asis_dept_changed = 'Y'::bpchar THEN vw_notification_dye.dept_custom_dye_delivery_min_date
+                            ELSE NULL::date
+                        END AS delivery_min_date,
+                        CASE
+                            WHEN vw_notification_dye.custom = 'N'::bpchar THEN vw_notification_dye.dye_delivery_max_date
+                            WHEN vw_notification_dye.custom = 'Y'::bpchar AND vw_notification_dye.cat_custom_dept_changed = 'N'::bpchar THEN vw_notification_dye.cat_custom_dye_delivery_max_date
+                            WHEN vw_notification_dye.custom = 'Y'::bpchar AND vw_notification_dye.asis_dept_changed = 'Y'::bpchar THEN vw_notification_dye.dept_custom_dye_delivery_max_date
+                            ELSE NULL::date
+                        END AS delivery_max_date,
+                        CASE
+                            WHEN vw_notification_dye.custom = 'N'::bpchar THEN vw_notification_dye.asis_dye_total_length_metre
+                            WHEN vw_notification_dye.custom = 'Y'::bpchar AND vw_notification_dye.cat_custom_dept_changed = 'N'::bpchar THEN vw_notification_dye.cat_custom_dye_total_length_metre
+                            WHEN vw_notification_dye.custom = 'Y'::bpchar AND vw_notification_dye.asis_dept_changed = 'Y'::bpchar THEN vw_notification_dye.dept_custom_dye_total_length_metre
+                            ELSE NULL::double precision
+                        END AS dye_total_length_metre,
+                        CASE
+                            WHEN vw_notification_dye.custom = 'N'::bpchar THEN vw_notification_dye.asis_dye_total_width_inch
+                            WHEN vw_notification_dye.custom = 'Y'::bpchar AND vw_notification_dye.cat_custom_dept_changed = 'N'::bpchar THEN vw_notification_dye.cat_custom_dye_total_width_inch
+                            WHEN vw_notification_dye.custom = 'Y'::bpchar AND vw_notification_dye.asis_dept_changed = 'Y'::bpchar THEN vw_notification_dye.dept_custom_dye_total_width_inch
+                            ELSE NULL::double precision
+                        END AS dye_total_width_inch,
+                        CASE
+                            WHEN vw_notification_dye.custom = 'N'::bpchar THEN vw_notification_dye.asis_dye_total_pcs
+                            WHEN vw_notification_dye.custom = 'Y'::bpchar AND vw_notification_dye.cat_custom_dept_changed = 'N'::bpchar THEN vw_notification_dye.cat_custom_dye_total_pcs
+                            WHEN vw_notification_dye.custom = 'Y'::bpchar AND vw_notification_dye.asis_dept_changed = 'Y'::bpchar THEN vw_notification_dye.dept_custom_dye_total_pcs
+                            ELSE NULL::integer
+                        END AS dye_total_pcs,
+                        CASE
+                            WHEN vw_notification_dye.custom = 'N'::bpchar THEN vw_notification_dye.asis_dye_total_measurement
+                            WHEN vw_notification_dye.custom = 'Y'::bpchar AND vw_notification_dye.cat_custom_dept_changed = 'N'::bpchar THEN vw_notification_dye.cat_custom_dye_total_measurement
+                            WHEN vw_notification_dye.custom = 'Y'::bpchar AND vw_notification_dye.asis_dept_changed = 'Y'::bpchar THEN vw_notification_dye.dept_custom_dye_total_measurement
+                            ELSE NULL::double precision
+                        END AS dye_total_measurement,
+                    vw_notification_dye.sc_planning_main_item_id,
+                    vw_notification_dye.style_ccode_id,
+                    vw_notification_dye.sc_asis_plan_dye_item_id,
+                    vw_notification_dye.cat_custom_plan_dye_item_id,
+                    vw_notification_dye.sc_custom_dept_plan_dye_item_id,
+                    vw_notification_dye.custom,
+                    vw_notification_dye.cat_custom_dept_changed,
+                    vw_notification_dye.asis_dept_changed,
+                    vw_notification_dye.item_approved,
+                    dye_item_approved
+                   FROM ( SELECT cat.category_planning_id,
+                            cat.product_codes,
+                            cat.production_type,
+                            cat.sc_planning_main_item_id,
+                            cat.plan_item_code,
+                            cat.transaction_id,
+                            cat.total_quantity,
+                            cat.raw_material_min_date,
+                            cat.raw_material_max_date,
+                            cat.style_item_code,
+                            cat.category_name,
+                            cat.style_item_name,
+                            cat.style_code,
+                            cat.color_code,
+                            cat.color,
+                            cat.style_item_quantity,
+                            cat.style_item_std_unit,
+                            cat.style_total_cost,
+                            cat.style_ccode_id,
+                            cat.item_code,
+                            cat.item_name,
+                            cat.item_quantity,
+                            cat.item_std_unit,
+                            cat.dye_code,
+                            cat.dye_colour_name,
+                            cat.generic_color_name,
+                            cat.dye_process_name,
+                            cat.num_colours,
+                            cat.color_hex_codes,
+                            cat.length_metre,
+                            cat.width_inches,
+                            cat.pcs,
+                            cat.total_measurement,
+                            cat.total_cost,
+                            cat.sc_asis_plan_dye_item_id,
+                            cat.dye_trans_id,
+                            cat.asis_dye_total_length_metre,
+                            cat.asis_dye_total_width_inch,
+                            cat.asis_dye_total_pcs,
+                            cat.asis_dye_total_measurement,
+                            cat.dye_issue_min_date,
+                            cat.dye_issue_max_date,
+                            cat.dye_delivery_min_date,
+                            cat.dye_delivery_max_date,
+                            cat.fabric_code,
+                            cat.fabric_name,
+                            cat.fabric_type,
+                            cat.sent_for_approval,
+                            cat.item_approved,
+			    cat.dye_item_approved,
+                            cat.custom,
+                            cat.asis_dept_changed,
+                            cat.cat_custom_dept_changed,
+                            cat.cat_custom_plan_dye_item_id,
+                            cat.cat_custom_transaction_id,
+                            cat.cat_custom_dye_total_length_metre,
+                            cat.cat_custom_dye_total_width_inch,
+                            cat.cat_custom_dye_total_pcs,
+                            cat.cat_custom_dye_total_measurement,
+                            cat.cat_custom_dye_issue_min_date,
+                            cat.cat_custom_dye_issue_max_date,
+                            cat.cat_custom_dye_delivery_min_date,
+                            cat.cat_custom_dye_delivery_max_date,
+                            dept.sc_custom_dept_plan_dye_item_id,
+                            dept.dept_custom_dye_total_length_metre,
+                            dept.dept_custom_dye_total_width_inch,
+                            dept.dept_custom_dye_total_pcs,
+                            dept.dept_custom_dye_total_measurement,
+                            dept.dept_custom_dye_issue_min_date,
+                            dept.dept_custom_dye_issue_max_date,
+                            dept.dept_custom_dye_delivery_min_date,
+                            dept.dept_custom_dye_delivery_max_date
+                           FROM vw_notification_asis_cat_custom_dye cat
+                             LEFT JOIN vw_notification_asis_dept_custom_dye dept ON cat.transaction_id::text = dept.transaction_id::text AND cat.cat_custom_plan_dye_item_id = dept.sc_custom_plan_dye_item_id) vw_notification_dye
+                  ORDER BY vw_notification_dye.category_planning_id) vw_req_dye
+             LEFT JOIN ( SELECT requis.transaction_id,
+                    sum(custom_requis.dye_length) AS dye_length,
+                    sum(custom_requis.dye_width) AS dye_width,
+                    sum(custom_requis.dye_pcs) AS dye_pcs,
+                    sum(custom_requis.dye_total_measurement) AS dye_total_measurement
+                   FROM tracker_custom_requisition_dye custom_requis,
+                    tracker_requisition_dye requis
+                  WHERE custom_requis.dye_requisition_id = requis.dye_requisition_id
+                  GROUP BY requis.transaction_id) req_dye ON req_dye.transaction_id::text = vw_req_dye.transaction_id::text) sub
+  WHERE (sub.dye_total_length_metre <> 0::double precision OR sub.dye_total_width_inch <> 0::double precision OR sub.dye_total_pcs <> 0) AND sub.dye_total_measurement <> 0::double precision;
+
+
+
+
+CREATE OR REPLACE VIEW vw_tracker_requisition_embroidery AS 
+ SELECT sub.category_planning_id,
+    sub.product_codes,
+    sub.production_type,
+    sub.plan_item_code,
+    sub.transaction_id,
+    sub.category_name,
+    sub.style_code,
+    sub.color_code,
+    sub.embrd_code,
+    sub.embrd_desc,
+    sub.embrd_std_unit,
+    sub.fabric_name,
+    sub.fabric_base_colour,
+    sub.material_reference,
+    sub.issue_min_date,
+    sub.issue_max_date,
+    sub.delivery_min_date,
+    sub.delivery_max_date,
+    sub.embroidery_total_metre,
+    sub.embroidery_total_pcs,
+    sub.embroidery_total_set,
+    sub.embroidery_total_line,
+    sub.embroidery_total_length_inch1,
+    sub.embroidery_total_width_inch2,
+    sub.embroidery_total_height_inch3,
+    sub.embroidery_total_measurement,
+    sub.sc_planning_main_item_id,
+    sub.style_ccode_id,
+    sub.sc_asis_plan_embrd_item_id,
+    sub.cat_custom_plan_embrd_item_id,
+    sub.sc_custom_dept_plan_emrd_item_id,
+    sub.custom,
+    sub.cat_custom_dept_changed,
+    sub.asis_dept_changed,
+    sub.item_approved,
+    embroidery_item_approved
+   FROM ( SELECT vw_req_embrd.category_planning_id,
+            vw_req_embrd.product_codes,
+            vw_req_embrd.production_type,
+            vw_req_embrd.plan_item_code,
+            vw_req_embrd.transaction_id,
+            vw_req_embrd.category_name,
+            vw_req_embrd.style_code,
+            vw_req_embrd.color_code,
+            vw_req_embrd.embroidery_code AS embrd_code,
+            vw_req_embrd.embroidery_description AS embrd_desc,
+            vw_req_embrd.embrd_std_unit,
+            vw_req_embrd.fabric_name,
+            vw_req_embrd.fabric_base_colour,
+            vw_req_embrd.material_reference,
+            vw_req_embrd.issue_min_date,
+            vw_req_embrd.issue_max_date,
+            vw_req_embrd.delivery_min_date,
+            vw_req_embrd.delivery_max_date,
+            vw_req_embrd.embroidery_total_metre - COALESCE(req_embrd.embrd_total_metre, 0::double precision) AS embroidery_total_metre,
+            vw_req_embrd.embroidery_total_pcs - COALESCE(req_embrd.embrd_total_pcs, 0::bigint) AS embroidery_total_pcs,
+            vw_req_embrd.embroidery_total_set - COALESCE(req_embrd.embrd_total_set, 0::bigint) AS embroidery_total_set,
+            vw_req_embrd.embroidery_total_line - COALESCE(req_embrd.embrd_total_line, 0::bigint)::double precision AS embroidery_total_line,
+            vw_req_embrd.embroidery_total_length_inch1 - COALESCE(req_embrd.embrd_total_length_inch1, 0::double precision) AS embroidery_total_length_inch1,
+            vw_req_embrd.embroidery_total_width_inch2 - COALESCE(req_embrd.embrd_total_width_inch2, 0::double precision) AS embroidery_total_width_inch2,
+            vw_req_embrd.embroidery_total_height_inch3 - COALESCE(req_embrd.embrd_total_height_inch3, 0::double precision) AS embroidery_total_height_inch3,
+            vw_req_embrd.embroidery_total_measurement - COALESCE(req_embrd.embrd_total_measurement, 0::double precision) AS embroidery_total_measurement,
+            vw_req_embrd.sc_planning_main_item_id,
+            vw_req_embrd.style_ccode_id,
+            vw_req_embrd.sc_asis_plan_embrd_item_id,
+            vw_req_embrd.cat_custom_plan_embrd_item_id,
+            vw_req_embrd.sc_custom_dept_plan_emrd_item_id,
+            vw_req_embrd.custom,
+            vw_req_embrd.cat_custom_dept_changed,
+            vw_req_embrd.asis_dept_changed,
+            vw_req_embrd.item_approved,
+            embroidery_item_approved
+           FROM ( SELECT vw_notification_embroidery.category_planning_id,
+                    vw_notification_embroidery.product_codes,
+                    vw_notification_embroidery.production_type,
+                    vw_notification_embroidery.plan_item_code,
+                    vw_notification_embroidery.transaction_id,
+                    vw_notification_embroidery.category_name,
+                    vw_notification_embroidery.style_code,
+                    vw_notification_embroidery.color_code,
+                    vw_notification_embroidery.embroidery_code,
+                    vw_notification_embroidery.embroidery_description,
+                    vw_notification_embroidery.embrd_std_unit,
+                    vw_notification_embroidery.fabric_code,
+                    vw_notification_embroidery.fabric_name,
+                    vw_notification_embroidery.fabric_base_colour,
+                    vw_notification_embroidery.material_reference,
+                        CASE
+                            WHEN vw_notification_embroidery.custom = 'N'::bpchar THEN vw_notification_embroidery.embroidery_issue_min_date
+                            WHEN vw_notification_embroidery.custom = 'Y'::bpchar AND vw_notification_embroidery.cat_custom_dept_changed = 'N'::bpchar THEN vw_notification_embroidery.cat_custom_embrd_issue_min_date
+                            WHEN vw_notification_embroidery.custom = 'Y'::bpchar AND vw_notification_embroidery.asis_dept_changed = 'Y'::bpchar THEN vw_notification_embroidery.dept_custom_embrd_issue_min_date
+                            ELSE NULL::date
+                        END AS issue_min_date,
+                        CASE
+                            WHEN vw_notification_embroidery.custom = 'N'::bpchar THEN vw_notification_embroidery.embroidery_issue_max_date
+                            WHEN vw_notification_embroidery.custom = 'Y'::bpchar AND vw_notification_embroidery.cat_custom_dept_changed = 'N'::bpchar THEN vw_notification_embroidery.cat_custom_embrd_issue_max_date
+                            WHEN vw_notification_embroidery.custom = 'Y'::bpchar AND vw_notification_embroidery.asis_dept_changed = 'Y'::bpchar THEN vw_notification_embroidery.dept_custom_embrd_issue_max_date
+                            ELSE NULL::date
+                        END AS issue_max_date,
+                        CASE
+                            WHEN vw_notification_embroidery.custom = 'N'::bpchar THEN vw_notification_embroidery.embroidery_delivery_min_date
+                            WHEN vw_notification_embroidery.custom = 'Y'::bpchar AND vw_notification_embroidery.cat_custom_dept_changed = 'N'::bpchar THEN vw_notification_embroidery.cat_custom_embrd_delivery_min_date
+                            WHEN vw_notification_embroidery.custom = 'Y'::bpchar AND vw_notification_embroidery.asis_dept_changed = 'Y'::bpchar THEN vw_notification_embroidery.dept_custom_embrd_delivery_min_date
+                            ELSE NULL::date
+                        END AS delivery_min_date,
+                        CASE
+                            WHEN vw_notification_embroidery.custom = 'N'::bpchar THEN vw_notification_embroidery.embroidery_delivery_max_date
+                            WHEN vw_notification_embroidery.custom = 'Y'::bpchar AND vw_notification_embroidery.cat_custom_dept_changed = 'N'::bpchar THEN vw_notification_embroidery.cat_custom_embrd_delivery_max_date
+                            WHEN vw_notification_embroidery.custom = 'Y'::bpchar AND vw_notification_embroidery.asis_dept_changed = 'Y'::bpchar THEN vw_notification_embroidery.dept_custom_embrd_delivery_max_date
+                            ELSE NULL::date
+                        END AS delivery_max_date,
+                        CASE
+                            WHEN vw_notification_embroidery.custom = 'N'::bpchar THEN vw_notification_embroidery.asis_embroidery_total_metre
+                            WHEN vw_notification_embroidery.custom = 'Y'::bpchar AND vw_notification_embroidery.cat_custom_dept_changed = 'N'::bpchar THEN vw_notification_embroidery.cat_custom_embrd_total_metre
+                            WHEN vw_notification_embroidery.custom = 'Y'::bpchar AND vw_notification_embroidery.asis_dept_changed = 'Y'::bpchar THEN vw_notification_embroidery.dept_custom_embrd_total_metre
+                            ELSE NULL::double precision
+                        END AS embroidery_total_metre,
+                        CASE
+                            WHEN vw_notification_embroidery.custom = 'N'::bpchar THEN vw_notification_embroidery.asis_embroidery_total_pcs
+                            WHEN vw_notification_embroidery.custom = 'Y'::bpchar AND vw_notification_embroidery.cat_custom_dept_changed = 'N'::bpchar THEN vw_notification_embroidery.cat_custom_embrd_total_pcs
+                            WHEN vw_notification_embroidery.custom = 'Y'::bpchar AND vw_notification_embroidery.asis_dept_changed = 'Y'::bpchar THEN vw_notification_embroidery.dept_custom_embrd_total_pcs
+                            ELSE NULL::integer
+                        END AS embroidery_total_pcs,
+                        CASE
+                            WHEN vw_notification_embroidery.custom = 'N'::bpchar THEN vw_notification_embroidery.asis_embroidery_total_set
+                            WHEN vw_notification_embroidery.custom = 'Y'::bpchar AND vw_notification_embroidery.cat_custom_dept_changed = 'N'::bpchar THEN vw_notification_embroidery.cat_custom_embrd_total_set
+                            WHEN vw_notification_embroidery.custom = 'Y'::bpchar AND vw_notification_embroidery.asis_dept_changed = 'Y'::bpchar THEN vw_notification_embroidery.dept_custom_embrd_total_set
+                            ELSE NULL::integer
+                        END AS embroidery_total_set,
+                        CASE
+                            WHEN vw_notification_embroidery.custom = 'N'::bpchar THEN vw_notification_embroidery.asis_embroidery_total_line
+                            WHEN vw_notification_embroidery.custom = 'Y'::bpchar AND vw_notification_embroidery.cat_custom_dept_changed = 'N'::bpchar THEN vw_notification_embroidery.cat_custom_embrd_total_line
+                            WHEN vw_notification_embroidery.custom = 'Y'::bpchar AND vw_notification_embroidery.asis_dept_changed = 'Y'::bpchar THEN vw_notification_embroidery.dept_custom_embrd_total_line
+                            ELSE NULL::double precision
+                        END AS embroidery_total_line,
+                        CASE
+                            WHEN vw_notification_embroidery.custom = 'N'::bpchar THEN vw_notification_embroidery.asis_embroidery_total_length_inch1
+                            WHEN vw_notification_embroidery.custom = 'Y'::bpchar AND vw_notification_embroidery.cat_custom_dept_changed = 'N'::bpchar THEN vw_notification_embroidery.cat_custom_embrd_total_length_inch1
+                            WHEN vw_notification_embroidery.custom = 'Y'::bpchar AND vw_notification_embroidery.asis_dept_changed = 'Y'::bpchar THEN vw_notification_embroidery.dept_custom_embrd_total_length_inch1
+                            ELSE NULL::double precision
+                        END AS embroidery_total_length_inch1,
+                        CASE
+                            WHEN vw_notification_embroidery.custom = 'N'::bpchar THEN vw_notification_embroidery.asis_embroidery_total_width_inch2
+                            WHEN vw_notification_embroidery.custom = 'Y'::bpchar AND vw_notification_embroidery.cat_custom_dept_changed = 'N'::bpchar THEN vw_notification_embroidery.cat_custom_embrd_total_width_inch2
+                            WHEN vw_notification_embroidery.custom = 'Y'::bpchar AND vw_notification_embroidery.asis_dept_changed = 'Y'::bpchar THEN vw_notification_embroidery.dept_custom_embrd_total_width_inch2
+                            ELSE NULL::double precision
+                        END AS embroidery_total_width_inch2,
+                        CASE
+                            WHEN vw_notification_embroidery.custom = 'N'::bpchar THEN vw_notification_embroidery.asis_embroidery_total_height_inch3
+                            WHEN vw_notification_embroidery.custom = 'Y'::bpchar AND vw_notification_embroidery.cat_custom_dept_changed = 'N'::bpchar THEN vw_notification_embroidery.cat_custom_embrd_total_height_inch3
+                            WHEN vw_notification_embroidery.custom = 'Y'::bpchar AND vw_notification_embroidery.asis_dept_changed = 'Y'::bpchar THEN vw_notification_embroidery.dept_custom_embrd_total_height_inch3
+                            ELSE NULL::double precision
+                        END AS embroidery_total_height_inch3,
+                        CASE
+                            WHEN vw_notification_embroidery.custom = 'N'::bpchar THEN vw_notification_embroidery.asis_embroidery_total_measurement
+                            WHEN vw_notification_embroidery.custom = 'Y'::bpchar AND vw_notification_embroidery.cat_custom_dept_changed = 'N'::bpchar THEN vw_notification_embroidery.cat_custom_embrd_total_measurement
+                            WHEN vw_notification_embroidery.custom = 'Y'::bpchar AND vw_notification_embroidery.asis_dept_changed = 'Y'::bpchar THEN vw_notification_embroidery.dept_custom_embrd_total_measurement
+                            ELSE NULL::double precision
+                        END AS embroidery_total_measurement,
+                    vw_notification_embroidery.sc_planning_main_item_id,
+                    vw_notification_embroidery.style_ccode_id,
+                    vw_notification_embroidery.sc_asis_plan_embrd_item_id,
+                    vw_notification_embroidery.cat_custom_plan_embrd_item_id,
+                    vw_notification_embroidery.sc_custom_dept_plan_emrd_item_id,
+                    vw_notification_embroidery.custom,
+                    vw_notification_embroidery.cat_custom_dept_changed,
+                    vw_notification_embroidery.asis_dept_changed,
+                    vw_notification_embroidery.item_approved,
+                    embroidery_item_approved
+                   FROM ( SELECT cat.category_planning_id,
+                            cat.product_codes,
+                            cat.production_type,
+                            cat.sc_planning_main_item_id,
+                            cat.plan_item_code,
+                            cat.transaction_id,
+                            cat.total_quantity,
+                            cat.raw_material_min_date,
+                            cat.raw_material_max_date,
+                            cat.style_item_code,
+                            cat.category_name,
+                            cat.style_item_name,
+                            cat.style_code,
+                            cat.color_code,
+                            cat.color,
+                            cat.style_item_quantity,
+                            cat.style_item_std_unit,
+                            cat.style_total_cost,
+                            cat.style_ccode_id,
+                            cat.item_code,
+                            cat.item_name,
+                            cat.item_quantity,
+                            cat.item_std_unit,
+                            cat.embroidery_code,
+                            cat.embroidery_description,
+                            cat.embroidery_photo_path,
+                            cat.vendor_code,
+                            cat.embrd_std_unit,
+                            cat.fabric_code,
+                            cat.fabric_base_colour,
+                            cat.fabric_metre,
+                            cat.fabric_inches,
+                            cat.fabric_pcs,
+                            cat.material_reference,
+                            cat.metre,
+                            cat.pcs,
+                            cat.embroidery_set,
+                            cat.line,
+                            cat.length_inch1,
+                            cat.width_inch2,
+                            cat.height_inch3,
+                            cat.total_measurement,
+                            cat.total_cost,
+                            cat.sc_asis_plan_embrd_item_id,
+                            cat.embrd_trans_id,
+                            cat.asis_embroidery_total_metre,
+                            cat.asis_embroidery_total_pcs,
+                            cat.asis_embroidery_total_set,
+                            cat.asis_embroidery_total_line,
+                            cat.asis_embroidery_total_length_inch1,
+                            cat.asis_embroidery_total_width_inch2,
+                            cat.asis_embroidery_total_height_inch3,
+                            cat.asis_embroidery_total_measurement,
+                            cat.embroidery_issue_min_date,
+                            cat.embroidery_issue_max_date,
+                            cat.embroidery_delivery_min_date,
+                            cat.embroidery_delivery_max_date,
+                            cat.fabric_name,
+                            cat.custom,
+                            cat.sent_for_approval,
+                            cat.item_approved,
+                            cat.embroidery_item_approved,
+                            cat.asis_dept_changed,
+                            cat.cat_custom_dept_changed,
+                            cat.cat_custom_plan_embrd_item_id,
+                            cat.cat_custom_transaction_id,
+                            cat.cat_custom_embrd_total_metre,
+                            cat.cat_custom_embrd_total_pcs,
+                            cat.cat_custom_embrd_total_set,
+                            cat.cat_custom_embrd_total_line,
+                            cat.cat_custom_embrd_total_length_inch1,
+                            cat.cat_custom_embrd_total_width_inch2,
+                            cat.cat_custom_embrd_total_height_inch3,
+                            cat.cat_custom_embrd_total_measurement,
+                            cat.cat_custom_embrd_issue_min_date,
+                            cat.cat_custom_embrd_issue_max_date,
+                            cat.cat_custom_embrd_delivery_min_date,
+                            cat.cat_custom_embrd_delivery_max_date,
+                            dept.sc_custom_dept_plan_emrd_item_id,
+                            dept.dept_custom_embrd_total_metre,
+                            dept.dept_custom_embrd_total_pcs,
+                            dept.dept_custom_embrd_total_set,
+                            dept.dept_custom_embrd_total_line,
+                            dept.dept_custom_embrd_total_length_inch1,
+                            dept.dept_custom_embrd_total_width_inch2,
+                            dept.dept_custom_embrd_total_height_inch3,
+                            dept.dept_custom_embrd_total_measurement,
+                            dept.dept_custom_embrd_issue_min_date,
+                            dept.dept_custom_embrd_issue_max_date,
+                            dept.dept_custom_embrd_delivery_min_date,
+                            dept.dept_custom_embrd_delivery_max_date
+                           FROM vw_notification_asis_cat_custom_embroidery cat
+                             LEFT JOIN vw_notification_asis_dept_custom_embroidery dept ON cat.transaction_id::text = dept.transaction_id::text AND cat.cat_custom_plan_embrd_item_id = dept.sc_custom_plan_embd_item_id) vw_notification_embroidery
+                  ORDER BY vw_notification_embroidery.category_planning_id) vw_req_embrd
+             LEFT JOIN ( SELECT requis.transaction_id,
+                    sum(custom_requis.embrd_total_metre) AS embrd_total_metre,
+                    sum(custom_requis.embrd_total_pcs) AS embrd_total_pcs,
+                    sum(custom_requis.embrd_total_set) AS embrd_total_set,
+                    sum(custom_requis.embrd_total_line) AS embrd_total_line,
+                    sum(custom_requis.embrd_total_length_inch1) AS embrd_total_length_inch1,
+                    sum(custom_requis.embrd_total_width_inch2) AS embrd_total_width_inch2,
+                    sum(custom_requis.embrd_total_height_inch3) AS embrd_total_height_inch3,
+                    sum(custom_requis.embrd_total_measurement) AS embrd_total_measurement
+                   FROM tracker_custom_requisition_embroidery custom_requis,
+                    tracker_requisition_embroidery requis
+                  WHERE custom_requis.embrd_requisition_id = requis.embrd_requisition_id
+                  GROUP BY requis.transaction_id) req_embrd ON req_embrd.transaction_id::text = req_embrd.transaction_id::text) sub
+  WHERE (sub.embroidery_total_metre <> 0::double precision OR sub.embroidery_total_line <> 0::double precision OR sub.embroidery_total_length_inch1 <> 0::double precision OR sub.embroidery_total_pcs <> 0 OR sub.embroidery_total_width_inch2 <> 0::double precision OR sub.embroidery_total_set <> 0 OR sub.embroidery_total_height_inch3 <> 0::double precision) AND sub.embroidery_total_measurement <> 0::double precision;
+
+
+
+CREATE OR REPLACE VIEW vw_tracker_requisition_fabric AS 
+ SELECT vw_notification_fabric.category_planning_id,
+    vw_notification_fabric.product_codes,
+    vw_notification_fabric.production_type,
+    vw_notification_fabric.plan_item_code,
+    vw_notification_fabric.transaction_id,
+    vw_notification_fabric.category_name,
+    vw_notification_fabric.style_code,
+    vw_notification_fabric.color_code,
+    vw_notification_fabric.fabric_code,
+    vw_notification_fabric.fabric_name,
+    vw_notification_fabric.fabric_type,
+    vw_notification_fabric.unit_std_width,
+        CASE
+            WHEN vw_notification_fabric.custom = 'N'::bpchar THEN vw_notification_fabric.fabric_issue_min_date
+            WHEN vw_notification_fabric.custom = 'Y'::bpchar AND vw_notification_fabric.cat_custom_dept_changed = 'N'::bpchar THEN vw_notification_fabric.cat_custom_fabric_issue_min_date
+            WHEN vw_notification_fabric.custom = 'Y'::bpchar AND vw_notification_fabric.asis_dept_changed = 'Y'::bpchar THEN vw_notification_fabric.dept_custom_fabric_issue_min_date
+            ELSE NULL::date
+        END AS issue_min_date,
+        CASE
+            WHEN vw_notification_fabric.custom = 'N'::bpchar THEN vw_notification_fabric.fabric_issue_max_date
+            WHEN vw_notification_fabric.custom = 'Y'::bpchar AND vw_notification_fabric.cat_custom_dept_changed = 'N'::bpchar THEN vw_notification_fabric.cat_custom_fabric_issue_max_date
+            WHEN vw_notification_fabric.custom = 'Y'::bpchar AND vw_notification_fabric.asis_dept_changed = 'Y'::bpchar THEN vw_notification_fabric.dept_custom_fabric_issue_max_date
+            ELSE NULL::date
+        END AS issue_max_date,
+        CASE
+            WHEN vw_notification_fabric.custom = 'N'::bpchar THEN vw_notification_fabric.fabric_delivery_min_date
+            WHEN vw_notification_fabric.custom = 'Y'::bpchar AND vw_notification_fabric.cat_custom_dept_changed = 'N'::bpchar THEN vw_notification_fabric.cat_custom_fabric_delivery_min_date
+            WHEN vw_notification_fabric.custom = 'Y'::bpchar AND vw_notification_fabric.asis_dept_changed = 'Y'::bpchar THEN vw_notification_fabric.dept_custom_fabric_delivery_min_date
+            ELSE NULL::date
+        END AS delivery_min_date,
+        CASE
+            WHEN vw_notification_fabric.custom = 'N'::bpchar THEN vw_notification_fabric.fabric_delivery_max_date
+            WHEN vw_notification_fabric.custom = 'Y'::bpchar AND vw_notification_fabric.cat_custom_dept_changed = 'N'::bpchar THEN vw_notification_fabric.cat_custom_fabric_delivery_max_date
+            WHEN vw_notification_fabric.custom = 'Y'::bpchar AND vw_notification_fabric.asis_dept_changed = 'Y'::bpchar THEN vw_notification_fabric.dept_custom_fabric_delivery_max_date
+            ELSE NULL::date
+        END AS delivery_max_date,
+        CASE
+            WHEN vw_notification_fabric.custom = 'N'::bpchar THEN vw_notification_fabric.asis_fabric_total_length_metre
+            WHEN vw_notification_fabric.custom = 'Y'::bpchar AND vw_notification_fabric.cat_custom_dept_changed = 'N'::bpchar THEN vw_notification_fabric.cat_custom_fabric_total_length_metre
+            WHEN vw_notification_fabric.custom = 'Y'::bpchar AND vw_notification_fabric.asis_dept_changed = 'Y'::bpchar THEN vw_notification_fabric.dept_custom_fabric_total_length_metre
+            ELSE NULL::double precision
+        END AS fabric_total_length_metre,
+        CASE
+            WHEN vw_notification_fabric.custom = 'N'::bpchar THEN vw_notification_fabric.asis_fabric_total_width_inch
+            WHEN vw_notification_fabric.custom = 'Y'::bpchar AND vw_notification_fabric.cat_custom_dept_changed = 'N'::bpchar THEN vw_notification_fabric.cat_custom_fabric_total_width_inch
+            WHEN vw_notification_fabric.custom = 'Y'::bpchar AND vw_notification_fabric.asis_dept_changed = 'Y'::bpchar THEN vw_notification_fabric.dept_custom_fabric_total_width_inch
+            ELSE NULL::double precision
+        END AS fabric_total_width_inch,
+        CASE
+            WHEN vw_notification_fabric.custom = 'N'::bpchar THEN vw_notification_fabric.asis_fabric_total_shrinkage_metre
+            WHEN vw_notification_fabric.custom = 'Y'::bpchar AND vw_notification_fabric.cat_custom_dept_changed = 'N'::bpchar THEN vw_notification_fabric.cat_custom_fabric_total_shrinkage_metre
+            WHEN vw_notification_fabric.custom = 'Y'::bpchar AND vw_notification_fabric.asis_dept_changed = 'Y'::bpchar THEN vw_notification_fabric.dept_custom_fabric_total_shrinkage_metre
+            ELSE NULL::double precision
+        END AS fabric_total_shrinkage_metre,
+        CASE
+            WHEN vw_notification_fabric.custom = 'N'::bpchar THEN vw_notification_fabric.asis_fabric_total_pcs
+            WHEN vw_notification_fabric.custom = 'Y'::bpchar AND vw_notification_fabric.cat_custom_dept_changed = 'N'::bpchar THEN vw_notification_fabric.cat_custom_fabric_total_pcs
+            WHEN vw_notification_fabric.custom = 'Y'::bpchar AND vw_notification_fabric.asis_dept_changed = 'Y'::bpchar THEN vw_notification_fabric.dept_custom_fabric_total_pcs
+            ELSE NULL::integer
+        END AS fabric_total_pcs,
+        CASE
+            WHEN vw_notification_fabric.custom = 'N'::bpchar THEN vw_notification_fabric.asis_fabric_total_measurement
+            WHEN vw_notification_fabric.custom = 'Y'::bpchar AND vw_notification_fabric.cat_custom_dept_changed = 'N'::bpchar THEN vw_notification_fabric.cat_custom_fabric_total_measurement
+            WHEN vw_notification_fabric.custom = 'Y'::bpchar AND vw_notification_fabric.asis_dept_changed = 'Y'::bpchar THEN vw_notification_fabric.dept_custom_fabric_total_measurement
+            ELSE NULL::double precision
+        END AS fabric_total_measurement,
+    vw_notification_fabric.sc_planning_main_item_id,
+    vw_notification_fabric.style_ccode_id,
+    vw_notification_fabric.sc_asis_plan_fabric_item_id,
+    vw_notification_fabric.cat_custom_plan_fabric_item_id,
+    vw_notification_fabric.sc_custom_dept_plan_fabric_item_id,
+    vw_notification_fabric.custom,
+    vw_notification_fabric.cat_custom_dept_changed,
+    vw_notification_fabric.asis_dept_changed,
+    vw_notification_fabric.item_approved,
+    vw_notification_fabric.fabric_item_approved
+   FROM ( SELECT cat.category_planning_id,
+            cat.product_codes,
+            cat.production_type,
+            cat.sc_planning_main_item_id,
+            cat.plan_item_code,
+            cat.transaction_id,
+            cat.total_quantity,
+            cat.raw_material_min_date,
+            cat.raw_material_max_date,
+            cat.style_item_code,
+            cat.category_name,
+            cat.style_item_name,
+            cat.style_code,
+            cat.color_code,
+            cat.color,
+            cat.style_item_quantity,
+            cat.style_item_std_unit,
+            cat.style_total_cost,
+            cat.style_ccode_id,
+            cat.item_code,
+            cat.item_name,
+            cat.quantity,
+            cat.item_std_unit,
+            cat.fabric_code,
+            cat.fabric_name,
+            cat.fabric_type,
+            cat.fabric_std_unit,
+            cat.unit_std_width,
+            cat.length_metre,
+            cat.width_inch,
+            cat.shrinkage_metre,
+            cat.pcs,
+            cat.total_measurement,
+            cat.sc_asis_plan_fabric_item_id,
+            cat.fab_trans_id,
+            cat.asis_fabric_total_length_metre,
+            cat.asis_fabric_total_width_inch,
+            cat.asis_fabric_total_shrinkage_metre,
+            cat.asis_fabric_total_pcs,
+            cat.asis_fabric_total_measurement,
+            cat.fabric_issue_min_date,
+            cat.fabric_issue_max_date,
+            cat.fabric_delivery_min_date,
+            cat.fabric_delivery_max_date,
+            cat.sent_for_approval,
+            cat.item_approved,
+	    cat.fabric_item_approved,
+            cat.custom,
+            cat.asis_dept_changed,
+            cat.cat_custom_dept_changed,
+            cat.cat_custom_plan_fabric_item_id,
+            cat.cat_custom_transaction_id,
+            cat.cat_custom_fabric_total_length_metre,
+            cat.cat_custom_fabric_total_width_inch,
+            cat.cat_custom_fabric_total_shrinkage_metre,
+            cat.cat_custom_fabric_total_pcs,
+            cat.cat_custom_fabric_total_measurement,
+            cat.cat_custom_fabric_issue_min_date,
+            cat.cat_custom_fabric_issue_max_date,
+            cat.cat_custom_fabric_delivery_min_date,
+            cat.cat_custom_fabric_delivery_max_date,
+            dept.sc_custom_dept_plan_fabric_item_id,
+            dept.dept_custom_fabric_total_length_metre,
+            dept.dept_custom_fabric_total_width_inch,
+            dept.dept_custom_fabric_total_shrinkage_metre,
+            dept.dept_custom_fabric_total_pcs,
+            dept.dept_custom_fabric_total_measurement,
+            dept.dept_custom_fabric_issue_min_date,
+            dept.dept_custom_fabric_issue_max_date,
+            dept.dept_custom_fabric_delivery_min_date,
+            dept.dept_custom_fabric_delivery_max_date
+           FROM vw_notification_asis_cat_custom_fabric cat
+             LEFT JOIN vw_notification_asis_dept_custom_fabric dept ON cat.transaction_id::text = dept.transaction_id::text AND cat.cat_custom_plan_fabric_item_id = dept.sc_custom_plan_fabric_item_id) vw_notification_fabric
+  ORDER BY vw_notification_fabric.category_planning_id;
+
+
+
+
+CREATE OR REPLACE VIEW vw_tracker_requisition_print AS 
+ SELECT sub.category_planning_id,
+    sub.product_codes,
+    sub.production_type,
+    sub.plan_item_code,
+    sub.transaction_id,
+    sub.category_name,
+    sub.style_code,
+    sub.color_code,
+    sub.print_code,
+    sub.printing_type,
+    sub.print_colour,
+    sub.num_screens_blocks,
+    sub.num_colours,
+    sub.issue_min_date,
+    sub.issue_max_date,
+    sub.delivery_min_date,
+    sub.delivery_max_date,
+    sub.print_total_length_metre,
+    sub.print_total_width_inch,
+    sub.print_total_pcs,
+    sub.print_total_measurement,
+    sub.sc_planning_main_item_id,
+    sub.style_ccode_id,
+    sub.sc_asis_plan_print_item_id,
+    sub.cat_custom_plan_print_item_id,
+    sub.sc_custom_dept_plan_print_item_id,
+    sub.custom,
+    sub.cat_custom_dept_changed,
+    sub.asis_dept_changed,
+    sub.item_approved,
+    print_item_approved
+   FROM ( SELECT vw_req_print.category_planning_id,
+            vw_req_print.product_codes,
+            vw_req_print.production_type,
+            vw_req_print.plan_item_code,
+            vw_req_print.transaction_id,
+            vw_req_print.category_name,
+            vw_req_print.style_code,
+            vw_req_print.color_code,
+            vw_req_print.print_code,
+            vw_req_print.printing_type,
+            vw_req_print.print_colour,
+            vw_req_print.num_screens_blocks,
+            vw_req_print.num_colours,
+            vw_req_print.issue_min_date,
+            vw_req_print.issue_max_date,
+            vw_req_print.delivery_min_date,
+            vw_req_print.delivery_max_date,
+            vw_req_print.print_total_length_metre - COALESCE(req_print.print_length, 0::double precision) AS print_total_length_metre,
+            vw_req_print.print_total_width_inch - COALESCE(req_print.print_width, 0::double precision) AS print_total_width_inch,
+            vw_req_print.print_total_pcs - COALESCE(req_print.print_pcs, 0::bigint) AS print_total_pcs,
+            vw_req_print.print_total_measurement - COALESCE(req_print.print_total_measurement, 0::double precision) AS print_total_measurement,
+            vw_req_print.sc_planning_main_item_id,
+            vw_req_print.style_ccode_id,
+            vw_req_print.sc_asis_plan_print_item_id,
+            vw_req_print.cat_custom_plan_print_item_id,
+            vw_req_print.sc_custom_dept_plan_print_item_id,
+            vw_req_print.custom,
+            vw_req_print.cat_custom_dept_changed,
+            vw_req_print.asis_dept_changed,
+            vw_req_print.item_approved,
+            print_item_approved
+           FROM ( SELECT vw_notification_print.category_planning_id,
+                    vw_notification_print.product_codes,
+                    vw_notification_print.production_type,
+                    vw_notification_print.plan_item_code,
+                    vw_notification_print.transaction_id,
+                    vw_notification_print.category_name,
+                    vw_notification_print.style_code,
+                    vw_notification_print.color_code,
+                    vw_notification_print.print_code,
+                    vw_notification_print.printing_type,
+                    vw_notification_print.print_colour,
+                    vw_notification_print.num_screens_blocks,
+                    vw_notification_print.num_colours,
+                        CASE
+                            WHEN vw_notification_print.custom = 'N'::bpchar THEN vw_notification_print.print_issue_min_date
+                            WHEN vw_notification_print.custom = 'Y'::bpchar AND vw_notification_print.cat_custom_dept_changed = 'N'::bpchar THEN vw_notification_print.cat_custom_print_issue_min_date
+                            WHEN vw_notification_print.custom = 'Y'::bpchar AND vw_notification_print.asis_dept_changed = 'Y'::bpchar THEN vw_notification_print.dept_custom_print_issue_min_date
+                            ELSE NULL::date
+                        END AS issue_min_date,
+                        CASE
+                            WHEN vw_notification_print.custom = 'N'::bpchar THEN vw_notification_print.print_issue_max_date
+                            WHEN vw_notification_print.custom = 'Y'::bpchar AND vw_notification_print.cat_custom_dept_changed = 'N'::bpchar THEN vw_notification_print.cat_custom_print_issue_max_date
+                            WHEN vw_notification_print.custom = 'Y'::bpchar AND vw_notification_print.asis_dept_changed = 'Y'::bpchar THEN vw_notification_print.dept_custom_print_issue_max_date
+                            ELSE NULL::date
+                        END AS issue_max_date,
+                        CASE
+                            WHEN vw_notification_print.custom = 'N'::bpchar THEN vw_notification_print.print_delivery_min_date
+                            WHEN vw_notification_print.custom = 'Y'::bpchar AND vw_notification_print.cat_custom_dept_changed = 'N'::bpchar THEN vw_notification_print.cat_custom_print_delivery_min_date
+                            WHEN vw_notification_print.custom = 'Y'::bpchar AND vw_notification_print.asis_dept_changed = 'Y'::bpchar THEN vw_notification_print.dept_custom_print_delivery_min_date
+                            ELSE NULL::date
+                        END AS delivery_min_date,
+                        CASE
+                            WHEN vw_notification_print.custom = 'N'::bpchar THEN vw_notification_print.print_delivery_max_date
+                            WHEN vw_notification_print.custom = 'Y'::bpchar AND vw_notification_print.cat_custom_dept_changed = 'N'::bpchar THEN vw_notification_print.cat_custom_print_delivery_max_date
+                            WHEN vw_notification_print.custom = 'Y'::bpchar AND vw_notification_print.asis_dept_changed = 'Y'::bpchar THEN vw_notification_print.dept_custom_print_delivery_max_date
+                            ELSE NULL::date
+                        END AS delivery_max_date,
+                        CASE
+                            WHEN vw_notification_print.custom = 'N'::bpchar THEN vw_notification_print.asis_print_total_length_metre
+                            WHEN vw_notification_print.custom = 'Y'::bpchar AND vw_notification_print.cat_custom_dept_changed = 'N'::bpchar THEN vw_notification_print.cat_custom_print_total_length_metre
+                            WHEN vw_notification_print.custom = 'Y'::bpchar AND vw_notification_print.asis_dept_changed = 'Y'::bpchar THEN vw_notification_print.dept_custom_print_total_length_metre
+                            ELSE NULL::double precision
+                        END AS print_total_length_metre,
+                        CASE
+                            WHEN vw_notification_print.custom = 'N'::bpchar THEN vw_notification_print.asis_print_total_width_inch
+                            WHEN vw_notification_print.custom = 'Y'::bpchar AND vw_notification_print.cat_custom_dept_changed = 'N'::bpchar THEN vw_notification_print.cat_custom_print_total_width_inch
+                            WHEN vw_notification_print.custom = 'Y'::bpchar AND vw_notification_print.asis_dept_changed = 'Y'::bpchar THEN vw_notification_print.dept_custom_print_total_width_inch
+                            ELSE NULL::double precision
+                        END AS print_total_width_inch,
+                        CASE
+                            WHEN vw_notification_print.custom = 'N'::bpchar THEN vw_notification_print.asis_print_total_pcs
+                            WHEN vw_notification_print.custom = 'Y'::bpchar AND vw_notification_print.cat_custom_dept_changed = 'N'::bpchar THEN vw_notification_print.cat_custom_print_total_pcs
+                            WHEN vw_notification_print.custom = 'Y'::bpchar AND vw_notification_print.asis_dept_changed = 'Y'::bpchar THEN vw_notification_print.dept_custom_print_total_pcs
+                            ELSE NULL::integer
+                        END AS print_total_pcs,
+                        CASE
+                            WHEN vw_notification_print.custom = 'N'::bpchar THEN vw_notification_print.asis_print_total_measurement
+                            WHEN vw_notification_print.custom = 'Y'::bpchar AND vw_notification_print.cat_custom_dept_changed = 'N'::bpchar THEN vw_notification_print.cat_custom_print_total_measurement
+                            WHEN vw_notification_print.custom = 'Y'::bpchar AND vw_notification_print.asis_dept_changed = 'Y'::bpchar THEN vw_notification_print.dept_custom_print_total_measurement
+                            ELSE NULL::double precision
+                        END AS print_total_measurement,
+                    vw_notification_print.sc_planning_main_item_id,
+                    vw_notification_print.style_ccode_id,
+                    vw_notification_print.sc_asis_plan_print_item_id,
+                    vw_notification_print.cat_custom_plan_print_item_id,
+                    vw_notification_print.sc_custom_dept_plan_print_item_id,
+                    vw_notification_print.custom,
+                    vw_notification_print.cat_custom_dept_changed,
+                    vw_notification_print.asis_dept_changed,
+                    vw_notification_print.item_approved,
+                    print_item_approved
+                   FROM ( SELECT cat.category_planning_id,
+                            cat.product_codes,
+                            cat.production_type,
+                            cat.sc_planning_main_item_id,
+                            cat.plan_item_code,
+                            cat.transaction_id,
+                            cat.total_quantity,
+                            cat.raw_material_min_date,
+                            cat.raw_material_max_date,
+                            cat.style_item_code,
+                            cat.category_name,
+                            cat.style_item_name,
+                            cat.style_code,
+                            cat.color_code,
+                            cat.color,
+                            cat.style_item_quantity,
+                            cat.style_item_std_unit,
+                            cat.style_total_cost,
+                            cat.style_ccode_id,
+                            cat.item_code,
+                            cat.item_name,
+                            cat.item_quantity,
+                            cat.item_std_unit,
+                            cat.print_code,
+                            cat.printing_type,
+                            cat.print_colour,
+                            cat.num_screens_blocks,
+                            cat.num_colours,
+                            cat.print_photo,
+                            cat.print_metre,
+                            cat.print_inches,
+                            cat.pcs,
+                            cat.total_measurement,
+                            cat.total_cost,
+                            cat.sc_asis_plan_print_item_id,
+                            cat.print_trans_id,
+                            cat.asis_print_total_length_metre,
+                            cat.asis_print_total_width_inch,
+                            cat.asis_print_total_pcs,
+                            cat.asis_print_total_measurement,
+                            cat.print_issue_min_date,
+                            cat.print_issue_max_date,
+                            cat.print_delivery_min_date,
+                            cat.print_delivery_max_date,
+                            cat.custom,
+                            cat.fabric_name,
+                            cat.sent_for_approval,
+                            cat.item_approved,
+                            cat.print_item_approved,
+                            cat.asis_dept_changed,
+                            cat.cat_custom_dept_changed,
+                            cat.cat_custom_plan_print_item_id,
+                            cat.cat_custom_transaction_id,
+                            cat.cat_custom_print_total_length_metre,
+                            cat.cat_custom_print_total_width_inch,
+                            cat.cat_custom_print_total_pcs,
+                            cat.cat_custom_print_total_measurement,
+                            cat.cat_custom_print_issue_min_date,
+                            cat.cat_custom_print_issue_max_date,
+                            cat.cat_custom_print_delivery_min_date,
+                            cat.cat_custom_print_delivery_max_date,
+                            dept.sc_custom_dept_plan_print_item_id,
+                            dept.dept_custom_print_total_length_metre,
+                            dept.dept_custom_print_total_width_inch,
+                            dept.dept_custom_print_total_pcs,
+                            dept.dept_custom_print_total_measurement,
+                            dept.dept_custom_print_issue_min_date,
+                            dept.dept_custom_print_issue_max_date,
+                            dept.dept_custom_print_delivery_min_date,
+                            dept.dept_custom_print_delivery_max_date
+                           FROM vw_notification_asis_cat_custom_print cat
+                             LEFT JOIN vw_notification_asis_dept_custom_print dept ON cat.transaction_id::text = dept.transaction_id::text AND cat.cat_custom_plan_print_item_id = dept.sc_custom_plan_print_item_id) vw_notification_print
+                  ORDER BY vw_notification_print.category_planning_id) vw_req_print
+             LEFT JOIN ( SELECT requis.transaction_id,
+                    sum(custom_requis.print_length) AS print_length,
+                    sum(custom_requis.print_width) AS print_width,
+                    sum(custom_requis.print_pcs) AS print_pcs,
+                    sum(custom_requis.print_total_measurement) AS print_total_measurement
+                   FROM tracker_custom_requisition_print custom_requis,
+                    tracker_requisition_print requis
+                  WHERE custom_requis.print_requisition_id = requis.print_requisition_id
+                  GROUP BY requis.transaction_id) req_print ON req_print.transaction_id::text = vw_req_print.transaction_id::text) sub
+  WHERE (sub.print_total_length_metre <> 0::double precision OR sub.print_total_width_inch <> 0::double precision OR sub.print_total_pcs <> 0) AND sub.print_total_measurement <> 0::double precision;
+
