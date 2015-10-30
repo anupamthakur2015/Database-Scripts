@@ -164,7 +164,7 @@ CREATE OR REPLACE VIEW VW_SC_DEPT_ITEM_DISP_ASIS_MATERIAL AS
      JOIN sc_category_planning_items_asis_material sc_asis_material ON v_dept_item.sc_planning_main_item_id = sc_asis_material.sc_planning_main_item_id
      LEFT JOIN vw_style_ccode_item_material_details v_material_details ON v_material_details.item_code::text = v_dept_item.plan_item_code::text;
 
-CREATE OR REPLACE VIEW VW_SC_DEPT_ITEM_DISP_ASIS_FABRIC AS 
+CREATE OR REPLACE VIEW vw_sc_dept_item_disp_asis_fabric AS 
  SELECT DISTINCT v_dept_item.category_planning_id,
     v_dept_item.product_codes,
     v_dept_item.production_type,
@@ -192,11 +192,7 @@ CREATE OR REPLACE VIEW VW_SC_DEPT_ITEM_DISP_ASIS_FABRIC AS
     v_fabric_details.fabric_name,
     v_fabric_details.fabric_type,
     v_fabric_details.fabric_std_unit,
-    v_fabric_details.unit_std_width,
-    v_fabric_details.length_metre,
-    v_fabric_details.width_inch,
-    v_fabric_details.shrinkage_metre,
-    v_fabric_details.pcs,
+    v_fabric_details.unit_std_width,   
     round(v_fabric_details.total_measurement::numeric, 2)::double precision AS total_measurement,
     sc_asis_fabric.sc_asis_plan_fabric_item_id,
     sc_asis_fabric.transaction_id AS fab_trans_id,
@@ -215,8 +211,10 @@ CREATE OR REPLACE VIEW VW_SC_DEPT_ITEM_DISP_ASIS_FABRIC AS
     v_dept_item.item_approved,
     sc_asis_fabric.item_approved AS fabric_item_approved
    FROM vw_sc_dept_item_disp v_dept_item
-     JOIN sc_category_planning_items_asis_fabric sc_asis_fabric ON v_dept_item.sc_planning_main_item_id = sc_asis_fabric.sc_planning_main_item_id
-     LEFT JOIN vw_style_ccode_item_fabric_details v_fabric_details ON v_fabric_details.item_code::text = v_dept_item.plan_item_code::text;
+     JOIN sc_category_planning_items_asis_fabric sc_asis_fabric 
+	ON v_dept_item.sc_planning_main_item_id = sc_asis_fabric.sc_planning_main_item_id AND v_dept_item.transaction_id=sc_asis_fabric.transaction_id
+     LEFT JOIN vw_style_ccode_item_fabric_details v_fabric_details 
+	ON v_fabric_details.item_code = v_dept_item.plan_item_code;
 
 
 CREATE OR REPLACE VIEW VW_SC_DEPT_ITEM_DISP_ASIS_DYE AS 
