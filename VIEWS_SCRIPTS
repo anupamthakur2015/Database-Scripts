@@ -2267,7 +2267,7 @@ CREATE OR REPLACE VIEW vw_tracker_fabric_order_delivery AS
     NULL::timestamp without time zone AS custom_issued_date
    FROM tracker_orders_fabric orders
      JOIN tracker_requisition_fabric requis ON orders.fabric_requisition_id = requis.fabric_requisition_id
-  WHERE customized is NULL AND orders.issued = 'Y'::bpchar AND orders.delivered IS NULL
+  WHERE orders.customized IS NULL AND orders.issued = 'Y'::bpchar AND orders.delivered IS NULL AND orders.department_rejected IS NULL
 UNION ALL
  SELECT requis.fabric_requisition_id,
     requis.issue_min_date,
@@ -2305,7 +2305,7 @@ UNION ALL
    FROM tracker_custom_orders_fabric custom_orders
      JOIN tracker_orders_fabric orders ON orders.order_id = custom_orders.order_id
      JOIN tracker_requisition_fabric requis ON orders.fabric_requisition_id = requis.fabric_requisition_id
-  WHERE custom_orders.issued::text = 'Y'::text AND custom_orders.delivered IS NULL;
+  WHERE custom_orders.issued::text = 'Y'::text AND custom_orders.delivered IS NULL AND custom_orders.department_rejected IS NULL;
 
 
 
@@ -2338,7 +2338,7 @@ CREATE OR REPLACE VIEW vw_tracker_material_order_delivery AS
     0 AS custom_total_amount
    FROM tracker_orders_material orders
      JOIN tracker_requisition_material requis ON orders.material_requisition_id = requis.material_requisition_id
-  WHERE customized IS NULL AND orders.issued = 'Y'::bpchar AND orders.delivered IS NULL
+  WHERE orders.customized IS NULL AND orders.issued = 'Y'::bpchar AND orders.delivered IS NULL AND orders.department_rejected IS NULL
 UNION ALL
  SELECT requis.material_requisition_id,
     requis.issue_min_date,
@@ -2369,9 +2369,7 @@ UNION ALL
    FROM tracker_custom_orders_material custom_orders
      JOIN tracker_orders_material orders ON orders.order_id = custom_orders.order_id
      JOIN tracker_requisition_material requis ON orders.material_requisition_id = requis.material_requisition_id
-  WHERE custom_orders.issued::text = 'Y'::text AND custom_orders.delivered IS NULL;
-
-
+  WHERE custom_orders.issued::text = 'Y'::text AND custom_orders.delivered IS NULL AND custom_orders.department_rejected IS NULL;
 
 
 CREATE OR REPLACE VIEW VW_TRACKER_EMBROIDERY_RECEIVED_DELIVERY_CONFIRMATION
