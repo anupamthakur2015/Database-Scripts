@@ -187,7 +187,9 @@ CREATE OR REPLACE VIEW vw_sc_dept_item_disp_asis_print AS
     item_fabric_details.fabric_name,
     sc_asis_print.sent_for_approval,
     v_dept_item.item_approved,
-    sc_asis_print.item_approved AS print_item_approved
+    sc_asis_print.item_approved AS print_item_approved,
+    v_dept_item.designer_code,
+    v_dept_item.designer_name
    FROM vw_sc_dept_item_disp v_dept_item
      JOIN sc_category_planning_items_asis_print sc_asis_print ON v_dept_item.sc_planning_main_item_id = sc_asis_print.sc_planning_main_item_id
      LEFT JOIN vw_style_ccode_item_printing_details v_print_details ON v_print_details.item_code::text = v_dept_item.plan_item_code::text
@@ -195,8 +197,7 @@ CREATE OR REPLACE VIEW vw_sc_dept_item_disp_asis_print AS
 
 
 
-
-CREATE OR REPLACE VIEW VW_SC_DEPT_ITEM_DISP_ASIS_MATERIAL AS 
+CREATE OR REPLACE VIEW vw_sc_dept_item_disp_asis_material AS 
  SELECT DISTINCT v_dept_item.category_planning_id,
     v_dept_item.product_codes,
     v_dept_item.production_type,
@@ -225,7 +226,6 @@ CREATE OR REPLACE VIEW VW_SC_DEPT_ITEM_DISP_ASIS_MATERIAL AS
     v_material_details.material_colour,
     v_material_details.material_type,
     v_material_details.material_std_unit,
-   -- v_material_details.material_quantity,
     sc_asis_material.sc_asis_plan_material_item_id,
     sc_asis_material.transaction_id AS mat_trans_id,
     sc_asis_material.material_total_quantity AS asis_material_total_quantity,
@@ -237,7 +237,9 @@ CREATE OR REPLACE VIEW VW_SC_DEPT_ITEM_DISP_ASIS_MATERIAL AS
     sc_asis_material.dept_changed,
     sc_asis_material.sent_for_approval,
     v_dept_item.item_approved,
-    sc_asis_material.item_approved AS material_item_approved
+    sc_asis_material.item_approved AS material_item_approved,
+    v_dept_item.designer_code,
+    v_dept_item.designer_name
    FROM vw_sc_dept_item_disp v_dept_item
      JOIN sc_category_planning_items_asis_material sc_asis_material ON v_dept_item.sc_planning_main_item_id = sc_asis_material.sc_planning_main_item_id
      LEFT JOIN vw_style_ccode_item_material_details v_material_details ON v_material_details.item_code::text = v_dept_item.plan_item_code::text;
@@ -271,7 +273,7 @@ CREATE OR REPLACE VIEW vw_sc_dept_item_disp_asis_fabric AS
     v_fabric_details.fabric_name,
     v_fabric_details.fabric_type,
     v_fabric_details.fabric_std_unit,
-    v_fabric_details.unit_std_width,   
+    v_fabric_details.unit_std_width,
     sc_asis_fabric.sc_asis_plan_fabric_item_id,
     sc_asis_fabric.transaction_id AS fab_trans_id,
     sc_asis_fabric.fabric_total_length_metre AS asis_fabric_total_length_metre,
@@ -287,15 +289,16 @@ CREATE OR REPLACE VIEW vw_sc_dept_item_disp_asis_fabric AS
     sc_asis_fabric.dept_changed,
     sc_asis_fabric.sent_for_approval,
     v_dept_item.item_approved,
-    sc_asis_fabric.item_approved AS fabric_item_approved
+    sc_asis_fabric.item_approved AS fabric_item_approved,
+    v_dept_item.designer_code,
+    v_dept_item.designer_name
    FROM vw_sc_dept_item_disp v_dept_item
-     JOIN sc_category_planning_items_asis_fabric sc_asis_fabric 
-	ON v_dept_item.sc_planning_main_item_id = sc_asis_fabric.sc_planning_main_item_id AND v_dept_item.transaction_id=sc_asis_fabric.transaction_id
-     LEFT JOIN vw_style_ccode_item_fabric_details v_fabric_details 
-	ON v_fabric_details.item_code = v_dept_item.plan_item_code;
+     JOIN sc_category_planning_items_asis_fabric sc_asis_fabric ON v_dept_item.sc_planning_main_item_id = sc_asis_fabric.sc_planning_main_item_id AND v_dept_item.transaction_id::text = sc_asis_fabric.transaction_id::text
+     LEFT JOIN vw_style_ccode_item_fabric_details v_fabric_details ON v_fabric_details.item_code::text = v_dept_item.plan_item_code::text;
 
 
-CREATE OR REPLACE VIEW VW_SC_DEPT_ITEM_DISP_ASIS_DYE AS 
+
+CREATE OR REPLACE VIEW vw_sc_dept_item_disp_asis_dye AS 
  SELECT DISTINCT v_dept_item.category_planning_id,
     v_dept_item.product_codes,
     v_dept_item.production_type,
@@ -325,10 +328,6 @@ CREATE OR REPLACE VIEW VW_SC_DEPT_ITEM_DISP_ASIS_DYE AS
     v_dye_details.dye_process_name,
     v_dye_details.num_colours,
     v_dye_details.color_hex_codes,
-    --v_dye_details.length_metre,
-    --v_dye_details.width_inches,
-   -- v_dye_details.pcs,
-   -- v_dye_details.total_measurement,
     v_dye_details.total_cost,
     sc_asis_dye.sc_asis_plan_dye_item_id,
     sc_asis_dye.transaction_id AS dye_trans_id,
@@ -347,14 +346,50 @@ CREATE OR REPLACE VIEW VW_SC_DEPT_ITEM_DISP_ASIS_DYE AS
     item_fabric_details.fabric_type,
     sc_asis_dye.sent_for_approval,
     v_dept_item.item_approved,
-    sc_asis_dye.item_approved AS dye_item_approved
+    sc_asis_dye.item_approved AS dye_item_approved,
+    v_dept_item.designer_code,
+    v_dept_item.designer_name
    FROM vw_sc_dept_item_disp v_dept_item
      JOIN sc_category_planning_items_asis_dye sc_asis_dye ON v_dept_item.sc_planning_main_item_id = sc_asis_dye.sc_planning_main_item_id
      LEFT JOIN vw_style_ccode_item_dye_details v_dye_details ON v_dye_details.item_code::text = v_dept_item.plan_item_code::text
      LEFT JOIN vw_style_ccode_item_fabric_details item_fabric_details ON item_fabric_details.item_code::text = v_dept_item.plan_item_code::text;
 
 
-CREATE OR REPLACE VIEW VW_SC_DEPT_ITEM_DISP_ASIS_EMBROIDERY AS 
+
+
+
+
+
+
+
+
+
+
+CREATE OR REPLACE VIEW vw_cat_custom_dye AS 
+ SELECT custom_dye_item.sc_custom_plan_dye_item_id,
+    custom_dye_item.sc_asis_plan_dye_item_id,
+    custom_dye_item.dye_total_length_metre,
+    custom_dye_item.dye_total_width_inches,
+    custom_dye_item.dye_total_pcs,
+    custom_dye_item.dye_total_measurement,
+    custom_dye_item.dye_issue_min_date,
+    custom_dye_item.dye_issue_max_date,
+    custom_dye_item.dye_delivery_min_date,
+    custom_dye_item.dye_delivery_max_date,
+    custom_dye_item.dept_changed,
+    custom_dye_item.is_delete,
+    custom_dye_item.created_date,
+    custom_dye_item.updated_date,
+    custom_dye_item.created_by,
+    custom_dye_item.updated_by,
+    custom_dye_item.transaction_id
+   FROM vw_sc_dept_item_disp_asis_dye v_asis_plan_dye_item
+     JOIN sc_cat_plan_items_custom_dye custom_dye_item ON v_asis_plan_dye_item.sc_asis_plan_dye_item_id = custom_dye_item.sc_asis_plan_dye_item_id
+  WHERE v_asis_plan_dye_item.custom = 'Y'::bpchar;
+
+
+
+CREATE OR REPLACE VIEW vw_sc_dept_item_disp_asis_embroidery AS 
  SELECT DISTINCT v_dept_item.category_planning_id,
     v_dept_item.product_codes,
     v_dept_item.production_type,
@@ -389,14 +424,6 @@ CREATE OR REPLACE VIEW VW_SC_DEPT_ITEM_DISP_ASIS_EMBROIDERY AS
     v_embrd_details.fabric_inches,
     v_embrd_details.fabric_pcs,
     v_embrd_details.material_reference,
-    --v_embrd_details.metre,
-   -- v_embrd_details.pcs,
-    --v_embrd_details.embroidery_set,
-    --v_embrd_details.line,
-    --v_embrd_details.length_inch1,
-    --v_embrd_details.width_inch2,
-   -- v_embrd_details.height_inch3,
-    --v_embrd_details.total_measurement,
     v_embrd_details.total_cost,
     sc_asis_embrd.sc_asis_plan_embrd_item_id,
     sc_asis_embrd.transaction_id AS embrd_trans_id,
@@ -417,35 +444,15 @@ CREATE OR REPLACE VIEW VW_SC_DEPT_ITEM_DISP_ASIS_EMBROIDERY AS
     sc_asis_embrd.dept_changed,
     sc_asis_embrd.sent_for_approval,
     v_dept_item.item_approved,
-    sc_asis_embrd.item_approved AS embroidery_item_approved
+    sc_asis_embrd.item_approved AS embroidery_item_approved,
+    v_dept_item.designer_code,
+    v_dept_item.designer_name
    FROM vw_sc_dept_item_disp v_dept_item
      LEFT JOIN sc_category_planning_items_asis_embroidery sc_asis_embrd ON v_dept_item.sc_planning_main_item_id = sc_asis_embrd.sc_planning_main_item_id
      LEFT JOIN vw_style_ccode_item_embroidery_details v_embrd_details ON v_embrd_details.item_code::text = v_dept_item.plan_item_code::text
      LEFT JOIN vw_style_ccode_item_fabric_details item_fabric_details ON item_fabric_details.item_code::text = v_dept_item.plan_item_code::text;
 
 
-
-CREATE OR REPLACE VIEW vw_cat_custom_dye AS 
- SELECT custom_dye_item.sc_custom_plan_dye_item_id,
-    custom_dye_item.sc_asis_plan_dye_item_id,
-    custom_dye_item.dye_total_length_metre,
-    custom_dye_item.dye_total_width_inches,
-    custom_dye_item.dye_total_pcs,
-    custom_dye_item.dye_total_measurement,
-    custom_dye_item.dye_issue_min_date,
-    custom_dye_item.dye_issue_max_date,
-    custom_dye_item.dye_delivery_min_date,
-    custom_dye_item.dye_delivery_max_date,
-    custom_dye_item.dept_changed,
-    custom_dye_item.is_delete,
-    custom_dye_item.created_date,
-    custom_dye_item.updated_date,
-    custom_dye_item.created_by,
-    custom_dye_item.updated_by,
-    custom_dye_item.transaction_id
-   FROM vw_sc_dept_item_disp_asis_dye v_asis_plan_dye_item
-     JOIN sc_cat_plan_items_custom_dye custom_dye_item ON v_asis_plan_dye_item.sc_asis_plan_dye_item_id = custom_dye_item.sc_asis_plan_dye_item_id
-  WHERE v_asis_plan_dye_item.custom = 'Y'::bpchar;
 
 
 CREATE OR REPLACE VIEW vw_cat_custom_embroidery AS 
@@ -572,10 +579,6 @@ CREATE OR REPLACE VIEW vw_notification_asis_cat_custom_dye AS
     v_asis_dye.dye_process_name,
     v_asis_dye.num_colours,
     v_asis_dye.color_hex_codes,
-    --v_asis_dye.length_metre,
-   -- v_asis_dye.width_inches,
-   -- v_asis_dye.pcs,
-   -- v_asis_dye.total_measurement,
     v_asis_dye.total_cost,
     v_asis_dye.sc_asis_plan_dye_item_id,
     v_asis_dye.dye_trans_id,
@@ -605,7 +608,9 @@ CREATE OR REPLACE VIEW vw_notification_asis_cat_custom_dye AS
     sub_custom.cat_custom_dye_issue_max_date,
     sub_custom.cat_custom_dye_delivery_min_date,
     sub_custom.cat_custom_dye_delivery_max_date,
-    v_asis_dye.dye_item_approved
+    v_asis_dye.dye_item_approved,
+       v_asis_dye.designer_code,
+    v_asis_dye.designer_name
    FROM vw_sc_dept_item_disp_asis_dye v_asis_dye
      LEFT JOIN ( SELECT cat_custom_dye.sc_custom_plan_dye_item_id AS cat_custom_plan_dye_item_id,
             cat_custom_dye.transaction_id AS cat_custom_transaction_id,
@@ -619,6 +624,9 @@ CREATE OR REPLACE VIEW vw_notification_asis_cat_custom_dye AS
             cat_custom_dye.dye_delivery_min_date AS cat_custom_dye_delivery_min_date,
             cat_custom_dye.dye_delivery_max_date AS cat_custom_dye_delivery_max_date
            FROM vw_cat_custom_dye cat_custom_dye) sub_custom ON sub_custom.cat_custom_transaction_id::text = v_asis_dye.transaction_id::text;
+
+
+
 
 
 CREATE OR REPLACE VIEW vw_notification_asis_cat_custom_embroidery AS 
@@ -656,14 +664,6 @@ CREATE OR REPLACE VIEW vw_notification_asis_cat_custom_embroidery AS
     v_asis_embrd.fabric_inches,
     v_asis_embrd.fabric_pcs,
     v_asis_embrd.material_reference,
-    --v_asis_embrd.metre,
-    --v_asis_embrd.pcs,
-    --v_asis_embrd.embroidery_set,
-    --v_asis_embrd.line,
-    --v_asis_embrd.length_inch1,
-    --v_asis_embrd.width_inch2,
-   -- v_asis_embrd.height_inch3,
-    --v_asis_embrd.total_measurement,
     v_asis_embrd.total_cost,
     v_asis_embrd.sc_asis_plan_embrd_item_id,
     v_asis_embrd.embrd_trans_id,
@@ -699,7 +699,9 @@ CREATE OR REPLACE VIEW vw_notification_asis_cat_custom_embroidery AS
     sub_custom.cat_custom_embrd_issue_max_date,
     sub_custom.cat_custom_embrd_delivery_min_date,
     sub_custom.cat_custom_embrd_delivery_max_date,
-    v_asis_embrd.embroidery_item_approved
+    v_asis_embrd.embroidery_item_approved,
+     v_asis_embrd.designer_code,
+    v_asis_embrd.designer_name
    FROM vw_sc_dept_item_disp_asis_embroidery v_asis_embrd
      LEFT JOIN ( SELECT cat_custom_embrd.sc_custom_plan_embd_item_id AS cat_custom_plan_embrd_item_id,
             cat_custom_embrd.transaction_id AS cat_custom_transaction_id,
@@ -717,6 +719,11 @@ CREATE OR REPLACE VIEW vw_notification_asis_cat_custom_embroidery AS
             cat_custom_embrd.embroidery_delivery_min_date AS cat_custom_embrd_delivery_min_date,
             cat_custom_embrd.embroidery_delivery_max_date AS cat_custom_embrd_delivery_max_date
            FROM vw_cat_custom_embroidery cat_custom_embrd) sub_custom ON sub_custom.cat_custom_transaction_id::text = v_asis_embrd.transaction_id::text;
+
+
+
+
+
 
 CREATE OR REPLACE VIEW vw_notification_asis_cat_custom_fabric AS 
  SELECT v_asis_fabric.category_planning_id,
@@ -747,11 +754,6 @@ CREATE OR REPLACE VIEW vw_notification_asis_cat_custom_fabric AS
     v_asis_fabric.fabric_type,
     v_asis_fabric.fabric_std_unit,
     v_asis_fabric.unit_std_width,
-    --v_asis_fabric.length_metre,
-   -- v_asis_fabric.width_inch,
-    --v_asis_fabric.shrinkage_metre,
-    --v_asis_fabric.pcs,
-    --v_asis_fabric.total_measurement,
     v_asis_fabric.sc_asis_plan_fabric_item_id,
     v_asis_fabric.fab_trans_id,
     v_asis_fabric.asis_fabric_total_length_metre,
@@ -779,7 +781,9 @@ CREATE OR REPLACE VIEW vw_notification_asis_cat_custom_fabric AS
     sub_custom.cat_custom_fabric_issue_max_date,
     sub_custom.cat_custom_fabric_delivery_min_date,
     sub_custom.cat_custom_fabric_delivery_max_date,
-    v_asis_fabric.fabric_item_approved
+    v_asis_fabric.fabric_item_approved,
+    v_asis_fabric.designer_code,
+    v_asis_fabric.designer_name
    FROM vw_sc_dept_item_disp_asis_fabric v_asis_fabric
      LEFT JOIN ( SELECT cat_custom_fabric.sc_custom_plan_fabric_item_id AS cat_custom_plan_fabric_item_id,
             cat_custom_fabric.transaction_id AS cat_custom_transaction_id,
@@ -794,6 +798,9 @@ CREATE OR REPLACE VIEW vw_notification_asis_cat_custom_fabric AS
             cat_custom_fabric.fabric_delivery_min_date AS cat_custom_fabric_delivery_min_date,
             cat_custom_fabric.fabric_delivery_max_date AS cat_custom_fabric_delivery_max_date
            FROM vw_cat_custom_fabric cat_custom_fabric) sub_custom ON sub_custom.cat_custom_transaction_id::text = v_asis_fabric.transaction_id::text;
+
+
+
 
 
 CREATE OR REPLACE VIEW vw_notification_asis_cat_custom_material AS 
@@ -825,7 +832,6 @@ CREATE OR REPLACE VIEW vw_notification_asis_cat_custom_material AS
     v_asis_material.material_colour,
     v_asis_material.material_type,
     v_asis_material.material_std_unit,
-    --v_asis_material.material_quantity,
     v_asis_material.sc_asis_plan_material_item_id,
     v_asis_material.mat_trans_id,
     v_asis_material.asis_material_total_quantity,
@@ -845,7 +851,9 @@ CREATE OR REPLACE VIEW vw_notification_asis_cat_custom_material AS
     sub_custom.cat_custom_material_issue_max_date,
     sub_custom.cat_custom_material_delivery_min_date,
     sub_custom.cat_custom_material_delivery_max_date,
-    v_asis_material.material_item_approved
+    v_asis_material.material_item_approved,
+    v_asis_material.designer_code,
+    v_asis_material.designer_name
    FROM vw_sc_dept_item_disp_asis_material v_asis_material
      LEFT JOIN ( SELECT cat_custom_material.transaction_id AS cat_custom_transaction_id,
             cat_custom_material.dept_changed,
@@ -888,10 +896,6 @@ CREATE OR REPLACE VIEW vw_notification_asis_cat_custom_print AS
     v_asis_print.num_screens_blocks,
     v_asis_print.num_colours,
     v_asis_print.print_photo,
-    --v_asis_print.print_metre,
-    --v_asis_print.print_inches,
-    --v_asis_print.pcs,
-    --v_asis_print.total_measurement,
     v_asis_print.total_cost,
     v_asis_print.sc_asis_plan_print_item_id,
     v_asis_print.print_trans_id,
@@ -919,7 +923,9 @@ CREATE OR REPLACE VIEW vw_notification_asis_cat_custom_print AS
     sub_custom.cat_custom_print_issue_max_date,
     sub_custom.cat_custom_print_delivery_min_date,
     sub_custom.cat_custom_print_delivery_max_date,
-    v_asis_print.print_item_approved
+    v_asis_print.print_item_approved,
+       v_asis_print.designer_code,
+    v_asis_print.designer_name
    FROM vw_sc_dept_item_disp_asis_print v_asis_print
      LEFT JOIN ( SELECT cat_custom_print.sc_custom_plan_print_item_id AS cat_custom_plan_print_item_id,
             cat_custom_print.transaction_id AS cat_custom_transaction_id,
@@ -933,6 +939,7 @@ CREATE OR REPLACE VIEW vw_notification_asis_cat_custom_print AS
             cat_custom_print.print_delivery_min_date AS cat_custom_print_delivery_min_date,
             cat_custom_print.print_delivery_max_date AS cat_custom_print_delivery_max_date
            FROM vw_cat_custom_print cat_custom_print) sub_custom ON sub_custom.cat_custom_transaction_id::text = v_asis_print.transaction_id::text;
+
 
 
 CREATE OR REPLACE VIEW vw_notification_asis_dept_custom_dye AS 
@@ -965,10 +972,6 @@ CREATE OR REPLACE VIEW vw_notification_asis_dept_custom_dye AS
     v_asis_dye.dye_process_name,
     v_asis_dye.num_colours,
     v_asis_dye.color_hex_codes,
-    --v_asis_dye.length_metre,
-    --v_asis_dye.width_inches,
-    --v_asis_dye.pcs,
-    --v_asis_dye.total_measurement,
     v_asis_dye.total_cost,
     v_asis_dye.sc_asis_plan_dye_item_id,
     v_asis_dye.dye_trans_id,
@@ -996,9 +999,12 @@ CREATE OR REPLACE VIEW vw_notification_asis_dept_custom_dye AS
     asis_dept_custom_dye.dye_issue_max_date AS dept_custom_dye_issue_max_date,
     asis_dept_custom_dye.dye_delivery_min_date AS dept_custom_dye_delivery_min_date,
     asis_dept_custom_dye.dye_delivery_max_date AS dept_custom_dye_delivery_max_date,
-    v_asis_dye.dye_item_approved
+    v_asis_dye.dye_item_approved,
+     v_asis_dye.designer_code,
+    v_asis_dye.designer_name
    FROM vw_sc_dept_item_disp_asis_dye v_asis_dye
      JOIN sc_dept_plan_items_custom_dye asis_dept_custom_dye ON asis_dept_custom_dye.transaction_id::text = v_asis_dye.transaction_id::text;
+
 
 
 
@@ -1037,14 +1043,6 @@ CREATE OR REPLACE VIEW vw_notification_asis_dept_custom_embroidery AS
     v_asis_embrd.fabric_inches,
     v_asis_embrd.fabric_pcs,
     v_asis_embrd.material_reference,
-    --v_asis_embrd.metre,
-    --v_asis_embrd.pcs,
-    --v_asis_embrd.embroidery_set,
-    --v_asis_embrd.line,
-    --v_asis_embrd.length_inch1,
-    --v_asis_embrd.width_inch2,
-    --v_asis_embrd.height_inch3,
-    --v_asis_embrd.total_measurement,
     v_asis_embrd.total_cost,
     v_asis_embrd.sc_asis_plan_embrd_item_id,
     v_asis_embrd.embrd_trans_id,
@@ -1078,9 +1076,13 @@ CREATE OR REPLACE VIEW vw_notification_asis_dept_custom_embroidery AS
     asis_dept_custom_embrd.embroidery_issue_max_date AS dept_custom_embrd_issue_max_date,
     asis_dept_custom_embrd.embroidery_delivery_min_date AS dept_custom_embrd_delivery_min_date,
     asis_dept_custom_embrd.embroidery_delivery_max_date AS dept_custom_embrd_delivery_max_date,
-    v_asis_embrd.embroidery_item_approved
+    v_asis_embrd.embroidery_item_approved,
+      v_asis_embrd.designer_code,
+    v_asis_embrd.designer_name
    FROM vw_sc_dept_item_disp_asis_embroidery v_asis_embrd
      JOIN sc_dept_plan_items_custom_embrd asis_dept_custom_embrd ON asis_dept_custom_embrd.transaction_id::text = v_asis_embrd.transaction_id::text;
+
+
 
 
 CREATE OR REPLACE VIEW vw_notification_asis_dept_custom_fabric AS 
@@ -1112,11 +1114,6 @@ CREATE OR REPLACE VIEW vw_notification_asis_dept_custom_fabric AS
     v_asis_fabric.fabric_type,
     v_asis_fabric.fabric_std_unit,
     v_asis_fabric.unit_std_width,
-    --v_asis_fabric.length_metre,
-    --v_asis_fabric.width_inch,
-    --v_asis_fabric.shrinkage_metre,
-   -- v_asis_fabric.pcs,
-    --v_asis_fabric.total_measurement,
     v_asis_fabric.sc_asis_plan_fabric_item_id,
     v_asis_fabric.fab_trans_id,
     v_asis_fabric.sent_for_approval,
@@ -1132,9 +1129,13 @@ CREATE OR REPLACE VIEW vw_notification_asis_dept_custom_fabric AS
     asis_dept_custom_fabric.fabric_issue_max_date AS dept_custom_fabric_issue_max_date,
     asis_dept_custom_fabric.fabric_delivery_min_date AS dept_custom_fabric_delivery_min_date,
     asis_dept_custom_fabric.fabric_delivery_max_date AS dept_custom_fabric_delivery_max_date,
-    v_asis_fabric.fabric_item_approved
+    v_asis_fabric.fabric_item_approved,
+ v_asis_fabric.designer_code,
+    v_asis_fabric.designer_name    
    FROM vw_sc_dept_item_disp_asis_fabric v_asis_fabric
      JOIN sc_dept_plan_items_custom_fabric asis_dept_custom_fabric ON asis_dept_custom_fabric.transaction_id::text = v_asis_fabric.transaction_id::text;
+
+
 
 
 CREATE OR REPLACE VIEW vw_notification_asis_dept_custom_material AS 
@@ -1166,7 +1167,6 @@ CREATE OR REPLACE VIEW vw_notification_asis_dept_custom_material AS
     v_asis_material.material_colour,
     v_asis_material.material_type,
     v_asis_material.material_std_unit,
-    --v_asis_material.material_quantity,
     v_asis_material.sc_asis_plan_material_item_id,
     v_asis_material.mat_trans_id,
     v_asis_material.asis_material_total_quantity,
@@ -1184,10 +1184,11 @@ CREATE OR REPLACE VIEW vw_notification_asis_dept_custom_material AS
     asis_dept_custom_material.material_issue_max_date AS dept_custom_material_issue_max_date,
     asis_dept_custom_material.material_delivery_min_date AS dept_custom_material_delivery_min_date,
     asis_dept_custom_material.material_delivery_max_date AS dept_custom_material_delivery_max_date,
-    v_asis_material.material_item_approved
+    v_asis_material.material_item_approved,
+    v_asis_material.designer_code,
+    v_asis_material.designer_name    
    FROM vw_sc_dept_item_disp_asis_material v_asis_material
      JOIN sc_dept_plan_items_custom_material asis_dept_custom_material ON asis_dept_custom_material.transaction_id::text = v_asis_material.transaction_id::text;
-
 
 
 CREATE OR REPLACE VIEW vw_notification_asis_dept_custom_print AS 
@@ -1220,10 +1221,6 @@ CREATE OR REPLACE VIEW vw_notification_asis_dept_custom_print AS
     v_asis_print.num_screens_blocks,
     v_asis_print.num_colours,
     v_asis_print.print_photo,
-    --v_asis_print.print_metre,
-    --v_asis_print.print_inches,
-    --v_asis_print.pcs,
-    --v_asis_print.total_measurement,
     v_asis_print.total_cost,
     v_asis_print.sc_asis_plan_print_item_id,
     v_asis_print.print_trans_id,
@@ -1249,7 +1246,9 @@ CREATE OR REPLACE VIEW vw_notification_asis_dept_custom_print AS
     asis_dept_custom_print.print_issue_max_date AS dept_custom_print_issue_max_date,
     asis_dept_custom_print.print_delivery_min_date AS dept_custom_print_delivery_min_date,
     asis_dept_custom_print.print_delivery_max_date AS dept_custom_print_delivery_max_date,
-    v_asis_print.print_item_approved
+    v_asis_print.print_item_approved,
+      v_asis_print.designer_code,
+    v_asis_print.designer_name  
    FROM vw_sc_dept_item_disp_asis_print v_asis_print
      JOIN sc_dept_plan_items_custom_print asis_dept_custom_print ON asis_dept_custom_print.transaction_id::text = v_asis_print.transaction_id::text;
 
