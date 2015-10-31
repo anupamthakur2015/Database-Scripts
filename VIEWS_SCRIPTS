@@ -24,6 +24,87 @@ CREATE OR REPLACE VIEW vw_style_ccode_details AS
      LEFT JOIN cm_designer_master cdm ON cdm.designer_id = sd.designer_id;
      
      
+
+
+CREATE OR REPLACE VIEW vw_style_ccode_item_printing_details AS 
+ SELECT items.style_ccode_id,
+    items.item_code,
+    items.item_name,
+    items.quantity AS item_quantity,
+    items.item_std_unit,
+    item_print.print_code,
+    pmd.printing_type,
+    item_print.print_colour,
+    pmd.num_screens_blocks,
+    pmd.num_colours,
+    pmd.print_photo,
+    item_print.print_metre,
+    item_print.print_inches,
+    item_print.pcs,
+    item_print.total_measurement,
+    item_print.total_cost
+   FROM vw_style_ccode_items items
+     LEFT JOIN cm_item_printing_details item_print ON item_print.style_item_id = items.style_item_id
+     JOIN vw_printing_master_details pmd ON pmd.print_code::text = item_print.print_code::text;
+
+
+
+
+CREATE OR REPLACE VIEW vw_style_ccode_item_dye_details AS 
+ SELECT items.style_ccode_id,
+    items.item_code,
+    items.item_name,
+    items.quantity AS item_quantity,
+    items.item_std_unit,
+    item_dye.dye_code,
+    dmd.dye_colour_name,
+    dmd.generic_color_name,
+    dmd.dye_process_name,
+    dmd.num_colours,
+    dmd.color_hex_codes,
+    item_dye.length_metre,
+    item_dye.width_inches,
+    item_dye.pcs,
+    item_dye.total_measurement,
+    item_dye.total_cost
+   FROM vw_style_ccode_items items
+     LEFT JOIN cm_item_dye_details item_dye ON item_dye.style_item_id = items.style_item_id
+     JOIN vw_dye_master_details dmd ON dmd.dye_code::text = item_dye.dye_code::text;
+
+
+
+CREATE OR REPLACE VIEW vw_style_ccode_item_embroidery_details AS 
+ SELECT items.style_ccode_id,
+    items.item_code,
+    items.item_name,
+    items.quantity AS item_quantity,
+    items.item_std_unit,
+    emd.embroidery_code,
+    emd.embroidery_description,
+    emd.embroidery_photo_path,
+    emd.vendor_code,
+    emd.embrd_std_unit,
+    item_embrd.fabric_code,
+    item_embrd.fabric_base_colour,
+    item_embrd.fabric_metre,
+    item_embrd.fabric_inches,
+    item_embrd.fabric_pcs,
+    item_embrd.material_reference,
+    item_embrd.metre,
+    item_embrd.pcs,
+    item_embrd.embroidery_set,
+    item_embrd.line,
+    item_embrd.length_inch1,
+    item_embrd.width_inch2,
+    item_embrd.height_inch3,
+    item_embrd.total_measurement,
+    item_embrd.total_cost
+   FROM vw_style_ccode_items items
+     LEFT JOIN cm_item_embroidery_details item_embrd ON item_embrd.style_item_id = items.style_item_id
+     JOIN vw_embroidery_master_details emd ON emd.embroidery_code::text = item_embrd.embroidery_code::text;
+
+
+
      CREATE OR REPLACE VIEW vw_sc_dept_item_disp AS 
  SELECT DISTINCT cp_items_master.category_planning_id,
     get_sc_product_codes(cp_items_master.category_planning_id) AS product_codes,
@@ -60,7 +141,7 @@ CREATE OR REPLACE VIEW vw_style_ccode_details AS
 ) sub_style_details ON sub_style_details.style_item_code::text = cp_items_master.item_code::text;
 
 
-CREATE OR REPLACE VIEW VW_SC_DEPT_ITEM_DISP_ASIS_PRINT AS 
+CREATE OR REPLACE VIEW vw_sc_dept_item_disp_asis_print AS 
  SELECT DISTINCT v_dept_item.category_planning_id,
     v_dept_item.product_codes,
     v_dept_item.production_type,
@@ -90,10 +171,6 @@ CREATE OR REPLACE VIEW VW_SC_DEPT_ITEM_DISP_ASIS_PRINT AS
     v_print_details.num_screens_blocks,
     v_print_details.num_colours,
     v_print_details.print_photo,
-    --v_print_details.print_metre,
-    --v_print_details.print_inches,
-   -- v_print_details.pcs,
-    --v_print_details.total_measurement,
     v_print_details.total_cost,
     sc_asis_print.sc_asis_plan_print_item_id,
     sc_asis_print.transaction_id AS print_trans_id,
@@ -115,6 +192,7 @@ CREATE OR REPLACE VIEW VW_SC_DEPT_ITEM_DISP_ASIS_PRINT AS
      JOIN sc_category_planning_items_asis_print sc_asis_print ON v_dept_item.sc_planning_main_item_id = sc_asis_print.sc_planning_main_item_id
      LEFT JOIN vw_style_ccode_item_printing_details v_print_details ON v_print_details.item_code::text = v_dept_item.plan_item_code::text
      LEFT JOIN vw_style_ccode_item_fabric_details item_fabric_details ON item_fabric_details.item_code::text = v_dept_item.plan_item_code::text;
+
 
 
 
