@@ -42,7 +42,9 @@ CREATE OR REPLACE VIEW vw_style_ccode_item_printing_details AS
     item_print.print_inches,
     item_print.pcs,
     item_print.total_measurement,
-    item_print.total_cost
+    item_print.total_cost,
+    items.product_code,
+    items.style_item_id
    FROM vw_style_ccode_items items
      LEFT JOIN cm_item_printing_details item_print ON item_print.style_item_id = items.style_item_id
      JOIN vw_printing_master_details pmd ON pmd.print_code::text = item_print.print_code::text;
@@ -66,7 +68,9 @@ CREATE OR REPLACE VIEW vw_style_ccode_item_dye_details AS
     item_dye.width_inches,
     item_dye.pcs,
     item_dye.total_measurement,
-    item_dye.total_cost
+    item_dye.total_cost,
+    items.product_code,
+    items.style_item_id
    FROM vw_style_ccode_items items
      LEFT JOIN cm_item_dye_details item_dye ON item_dye.style_item_id = items.style_item_id
      JOIN vw_dye_master_details dmd ON dmd.dye_code::text = item_dye.dye_code::text;
@@ -98,14 +102,16 @@ CREATE OR REPLACE VIEW vw_style_ccode_item_embroidery_details AS
     item_embrd.width_inch2,
     item_embrd.height_inch3,
     item_embrd.total_measurement,
-    item_embrd.total_cost
+    item_embrd.total_cost,
+    items.product_code,
+    items.style_item_id
    FROM vw_style_ccode_items items
      LEFT JOIN cm_item_embroidery_details item_embrd ON item_embrd.style_item_id = items.style_item_id
      JOIN vw_embroidery_master_details emd ON emd.embroidery_code::text = item_embrd.embroidery_code::text;
 
 
 
-     CREATE OR REPLACE VIEW vw_sc_dept_item_disp AS 
+CREATE OR REPLACE VIEW vw_sc_dept_item_disp AS 
  SELECT DISTINCT cp_items_master.category_planning_id,
     get_sc_product_codes(cp_items_master.category_planning_id) AS product_codes,
     get_sc_production_types(cp_items_master.category_planning_id) AS production_type,
@@ -124,7 +130,10 @@ CREATE OR REPLACE VIEW vw_style_ccode_item_embroidery_details AS
     sub_style_details.style_item_quantity,
     sub_style_details.style_item_std_unit,
     sub_style_details.style_total_cost,
-    cp_items_master.item_approved
+    cp_items_master.item_approved,
+    sub_style_details.designer_code,
+    sub_style_details.designer_name,
+    cp_items_master.style_item_id
    FROM sc_category_planning_items_master cp_items_master
      LEFT JOIN ( SELECT DISTINCT v_sci.item_code AS style_item_code,
             v_scd.category_name,
@@ -132,13 +141,17 @@ CREATE OR REPLACE VIEW vw_style_ccode_item_embroidery_details AS
             v_scd.style_code,
             v_scd.color_code,
             v_scd.color,
+            v_scd.designer_code,
+            v_scd.designer_name,
             v_sci.quantity AS style_item_quantity,
             v_sci.item_std_unit AS style_item_std_unit,
-            v_sci.total_cost AS style_total_cost
+            v_sci.total_cost AS style_total_cost,
+            v_sci.style_item_id
            FROM vw_style_ccode_items v_sci
              LEFT JOIN vw_style_ccode_details v_scd ON v_sci.style_ccode_id = v_scd.style_ccode_id
-             LEFT JOIN sc_category_planning_master scpm ON scpm.product_code=v_sci.product_code         
-) sub_style_details ON sub_style_details.style_item_code::text = cp_items_master.item_code::text;
+             LEFT JOIN sc_category_planning_master scpm ON scpm.product_code::text = v_sci.product_code::text
+	) sub_style_details ON sub_style_details.style_item_code::text = cp_items_master.item_code::text AND sub_style_details.style_item_id=cp_items_master.style_item_id;
+
 
 
 CREATE OR REPLACE VIEW vw_sc_dept_item_disp_asis_print AS 
@@ -192,8 +205,29 @@ CREATE OR REPLACE VIEW vw_sc_dept_item_disp_asis_print AS
     v_dept_item.designer_name
    FROM vw_sc_dept_item_disp v_dept_item
      JOIN sc_category_planning_items_asis_print sc_asis_print ON v_dept_item.sc_planning_main_item_id = sc_asis_print.sc_planning_main_item_id
-     LEFT JOIN vw_style_ccode_item_printing_details v_print_details ON v_print_details.item_code::text = v_dept_item.plan_item_code::text
+     LEFT JOIN vw_style_ccode_item_printing_details v_print_details ON v_print_details.item_code::text = v_dept_item.plan_item_code::text AND v_print_details.style_item_id = v_dept_item.style_item_id
      LEFT JOIN vw_style_ccode_item_fabric_details item_fabric_details ON item_fabric_details.item_code::text = v_dept_item.plan_item_code::text;
+
+
+
+
+CREATE OR REPLACE VIEW vw_style_ccode_item_material_details AS 
+ SELECT items.style_ccode_id,
+    items.item_code,
+    items.item_name,
+    items.quantity AS item_quantity,
+    items.item_std_unit,
+    item_mat.material_code,
+    mmd.material_name,
+    mmd.material_colour,
+    mmd.material_type,
+    mmd.material_std_unit,
+    item_mat.quantity AS material_quantity,
+  items.product_code,
+    items.style_item_id
+   FROM vw_style_ccode_items items
+     JOIN cm_item_material_details item_mat ON item_mat.style_item_id = items.style_item_id
+     LEFT JOIN vw_material_master_details mmd ON mmd.material_code::text = item_mat.material_code::text;
 
 
 
@@ -242,7 +276,32 @@ CREATE OR REPLACE VIEW vw_sc_dept_item_disp_asis_material AS
     v_dept_item.designer_name
    FROM vw_sc_dept_item_disp v_dept_item
      JOIN sc_category_planning_items_asis_material sc_asis_material ON v_dept_item.sc_planning_main_item_id = sc_asis_material.sc_planning_main_item_id
-     LEFT JOIN vw_style_ccode_item_material_details v_material_details ON v_material_details.item_code::text = v_dept_item.plan_item_code::text;
+     LEFT JOIN vw_style_ccode_item_material_details v_material_details ON v_material_details.item_code::text = v_dept_item.plan_item_code::text AND v_material_details.style_item_id = v_dept_item.style_item_id;
+
+
+
+CREATE OR REPLACE VIEW vw_style_ccode_item_fabric_details AS 
+ SELECT items.style_ccode_id,
+    items.item_code,
+    items.item_name,
+    items.quantity,
+    items.item_std_unit,
+    item_fab.fabric_code,
+    fmd.fabric_name,
+    fmd.fabric_type,
+    fmd.fabric_std_unit,
+    fmd.unit_std_width,
+    item_fab.length_metre,
+    item_fab.width_inch,
+    item_fab.shrinkage_metre,
+    item_fab.pcs,
+    item_fab.total_measurement,
+     items.product_code,
+    items.style_item_id
+   FROM vw_style_ccode_items items
+     JOIN cm_item_fabric_details item_fab ON item_fab.style_item_id = items.style_item_id
+     LEFT JOIN vw_fabric_master_details fmd ON fmd.fabric_code::text = item_fab.fabric_code::text;
+
 
 
 CREATE OR REPLACE VIEW vw_sc_dept_item_disp_asis_fabric AS 
@@ -294,7 +353,7 @@ CREATE OR REPLACE VIEW vw_sc_dept_item_disp_asis_fabric AS
     v_dept_item.designer_name
    FROM vw_sc_dept_item_disp v_dept_item
      JOIN sc_category_planning_items_asis_fabric sc_asis_fabric ON v_dept_item.sc_planning_main_item_id = sc_asis_fabric.sc_planning_main_item_id AND v_dept_item.transaction_id::text = sc_asis_fabric.transaction_id::text
-     LEFT JOIN vw_style_ccode_item_fabric_details v_fabric_details ON v_fabric_details.item_code::text = v_dept_item.plan_item_code::text;
+     LEFT JOIN vw_style_ccode_item_fabric_details v_fabric_details ON v_fabric_details.item_code::text = v_dept_item.plan_item_code::text AND v_fabric_details.style_item_id = v_dept_item.style_item_id;
 
 
 
@@ -351,7 +410,7 @@ CREATE OR REPLACE VIEW vw_sc_dept_item_disp_asis_dye AS
     v_dept_item.designer_name
    FROM vw_sc_dept_item_disp v_dept_item
      JOIN sc_category_planning_items_asis_dye sc_asis_dye ON v_dept_item.sc_planning_main_item_id = sc_asis_dye.sc_planning_main_item_id
-     LEFT JOIN vw_style_ccode_item_dye_details v_dye_details ON v_dye_details.item_code::text = v_dept_item.plan_item_code::text
+     LEFT JOIN vw_style_ccode_item_dye_details v_dye_details ON v_dye_details.item_code::text = v_dept_item.plan_item_code::text AND v_dye_details.style_item_id = v_dept_item.style_item_id
      LEFT JOIN vw_style_ccode_item_fabric_details item_fabric_details ON item_fabric_details.item_code::text = v_dept_item.plan_item_code::text;
 
 
@@ -449,9 +508,8 @@ CREATE OR REPLACE VIEW vw_sc_dept_item_disp_asis_embroidery AS
     v_dept_item.designer_name
    FROM vw_sc_dept_item_disp v_dept_item
      LEFT JOIN sc_category_planning_items_asis_embroidery sc_asis_embrd ON v_dept_item.sc_planning_main_item_id = sc_asis_embrd.sc_planning_main_item_id
-     LEFT JOIN vw_style_ccode_item_embroidery_details v_embrd_details ON v_embrd_details.item_code::text = v_dept_item.plan_item_code::text
+     LEFT JOIN vw_style_ccode_item_embroidery_details v_embrd_details ON v_embrd_details.item_code::text = v_dept_item.plan_item_code::text AND v_embrd_details.style_item_id = v_dept_item.style_item_id
      LEFT JOIN vw_style_ccode_item_fabric_details item_fabric_details ON item_fabric_details.item_code::text = v_dept_item.plan_item_code::text;
-
 
 
 
@@ -2664,6 +2722,34 @@ UNION ALL
      JOIN tracker_requisition_material requis ON orders.material_requisition_id = requis.material_requisition_id
   WHERE custom_orders.issued::text = 'Y'::text AND custom_orders.delivered::text = 'Y'::text AND custom_orders.designer_received IS NULL AND orders.designer_rejected IS NULL AND orders.designer_returned IS NULL;
 
+
+
+
+
+
+
+CREATE OR REPLACE VIEW VW_DEPT_EMBROIDERY_MASTER_DISP AS 
+ SELECT em.embroidery_code,
+    vm.vendor_name,
+    evrh.vendor_code,
+    em.embroidery_description,
+    sm.stdum_name,
+    evrh.fixed_rate,
+    evrh.fixed_rate_date,
+    evrh.approx_calculation,
+    evrh.approx_costing,
+    em.embroidery_photo_path
+   FROM 
+	dept_embroidery_master em
+	LEFT JOIN
+	dept_embroidery_vendor_rate_history evrh ON em.embd_vendor_rate_id = evrh.embd_vendor_rate_id  
+	LEFT JOIN 
+	cm_vendor_master vm  ON evrh.vendor_id = vm.vendor_id
+	LEFT JOIN 
+	stdunit_master sm ON em.std_unit_id = sm.id
+  WHERE 
+	em.is_delete = 'N'
+	ORDER BY evrh.embd_vendor_rate_id;
 
 
 
