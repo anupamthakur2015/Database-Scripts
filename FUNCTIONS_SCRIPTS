@@ -1,0 +1,239 @@
+CREATE OR REPLACE FUNCTION func_style_save_items_dye(
+    IN p_code character varying,
+    IN itm_code character varying,
+    IN fabric_code character varying,
+    IN material_code character varying,
+    IN d_code character varying,
+    IN length_metre double precision,
+    IN width_inches double precision,
+    IN pcs integer,
+    IN total_measurement double precision,
+    IN item_dye_date date,
+    IN total_cost double precision,
+    IN deadline timestamp without time zone,
+    IN created_by character varying,
+    IN updated_by character varying,
+    IN v_style_dye_id integer,
+    OUT output_msg text,
+    OUT id integer)
+  RETURNS record AS
+$BODY$
+DECLARE
+ var_style_item_id int;
+BEGIN   
+
+/* Delete all Dye details of the items for that particular product code */
+
+
+--DELETE FROM CM_ITEM_DYE_DETAILS imd WHERE style_item_id=get_style_item_id($1,$2)  and dye_code=d_code;
+
+DELETE FROM CM_ITEM_DYE_DETAILS imd
+WHERE style_dye_id=v_style_dye_id;
+
+
+INSERT INTO CM_ITEM_DYE_DETAILS (
+ style_item_id ,
+ fabric_code,
+ material_code,
+ dye_code ,
+ length_metre ,
+ width_inches ,	
+ pcs ,
+ total_measurement ,
+ item_dye_date ,
+ total_cost ,
+ deadline,	 
+ created_by ,
+ updated_by 
+)
+VALUES(
+get_style_item_id($1,$2),	
+$3,
+$4,
+$5,
+$6,
+$7,
+$8,
+$9,
+$10,
+$11,
+$12,
+$13,
+$14
+);
+output_msg:='Successfully inserted';	
+
+END
+$BODY$
+  LANGUAGE plpgsql;
+
+
+
+CREATE OR REPLACE FUNCTION sc_insert_cat_plan_items(
+    IN cat_planning_id integer,
+    IN transaction_id character varying,
+    IN item_code character varying,
+    IN total_quantity double precision,
+    IN raw_material_min_date date,
+    IN raw_material_max_date date,
+    IN created_by character varying,
+    IN updated_by character varying,
+    IN v_syle_item_id integer,
+    OUT output_msg text,
+    OUT id integer)
+  RETURNS record AS
+$BODY$
+BEGIN   
+	/* Update all product codes to work_order_planned='Y' */
+	UPDATE CM_PRODUCTION_INFO_DETAILS set work_order_planned = 'Y'
+	WHERE product_code IN (select product_code from SC_CATEGORY_PLANNING_MASTER WHERE category_planning_id=$1)
+	and work_order_planned='N';
+
+	/* Insert all Item Codes corresponging to the selected product codes during Scheduling and belongs to a specific Style Code and Color Code */
+	INSERT INTO SC_CATEGORY_PLANNING_ITEMS_MASTER (
+	category_planning_id,
+	transaction_id,
+	item_code,
+	total_quantity,
+	raw_material_Min_date,
+	raw_material_Max_date,
+	created_by,
+	updated_by,
+	style_item_id
+	)
+	VALUES(	
+	$1,
+	$2,
+	$3,
+	$4,
+	$5,
+	$6,
+	$7,
+	$8,
+	v_syle_item_id
+	) RETURNING sc_planning_main_item_id into id;
+	output_msg:='Successfully inserted';		
+	
+END
+$BODY$
+  LANGUAGE plpgsql;
+
+
+
+CREATE OR REPLACE FUNCTION func_tracker_department_reject_fabric(
+    IN v_order_id integer,
+    IN v_fabric_custom_order_id integer,
+    IN v_customise character varying,
+    IN v_parameter text,
+    IN v_department_not_accepted_reason text,
+    OUT output_msg text,
+    OUT id integer)
+  RETURNS record AS
+BEGIN  
+
+		if v_parameter = 'STOCK' THEN
+
+			if v_customise = 'Y' THEN			
+				update tracker_custom_orders_fabric set department_returned_to_stock = 'Y' ,department_returned_date = current_timestamp
+				where fabric_custom_order_id = $2;
+
+				output_msg:='Successfully';
+			else
+				update tracker_orders_fabric set department_returned_to_stock = 'Y' ,department_returned_date = current_timestamp 
+				where order_id = $1;
+
+				output_msg:='Successfully';
+			end if;   
+
+		elsif v_parameter = 'RECYCLE' THEN
+
+			if v_customise = 'Y' THEN
+				update tracker_custom_orders_fabric set department_recycled = 'Y' ,department_returned_date = current_timestamp 
+				where fabric_custom_order_id = $2;
+
+				output_msg:='Successfully';
+			else
+
+				update tracker_orders_fabric set department_recycled = 'Y' ,department_returned_date = current_timestamp 
+				where order_id = $1;
+
+				output_msg:='Successfully';
+			end if; 
+
+		elsif v_parameter = 'REJECT' THEN
+
+			if v_customise = 'Y' THEN
+				update tracker_custom_orders_fabric set department_rejected = 'Y' ,department_returned_date = current_timestamp , department_not_accepted_reason=v_department_not_accepted_reason
+				where fabric_custom_order_id = $2;
+
+				output_msg:='Successfully';
+			else
+
+				update tracker_orders_fabric set department_rejected = 'Y' ,department_returned_date = current_timestamp , department_not_accepted_reason=v_department_not_accepted_reason
+				where order_id = $1;
+
+				output_msg:='Successfully';
+			end if; 
+		END IF;
+
+END
+  LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION func_tracker_department_reject_material(
+    IN v_order_id integer,
+    IN v_material_custom_order_id integer,
+    IN v_customise character varying,
+    IN v_parameter text,
+    IN v_department_not_accepted_reason text,
+    OUT output_msg text,
+    OUT id integer)
+  RETURNS record AS
+BEGIN  
+
+		if v_parameter = 'STOCK' THEN
+
+			if v_customise = 'Y' THEN
+				update tracker_custom_orders_material set department_returned_to_stock = 'Y' ,department_returned_date = current_timestamp 
+				where material_custom_order_id = $2;
+
+				output_msg:='Successfully';
+			else
+				update tracker_orders_material set department_returned_to_stock = 'Y' ,department_returned_date = current_timestamp 
+				where order_id = $1;
+
+				output_msg:='Successfully';
+			end if;                     
+
+		elsif v_parameter = 'RECYCLE' THEN
+
+			if v_customise = 'Y' THEN
+				update tracker_custom_orders_material set department_recycled = 'Y' ,department_returned_date = current_timestamp 
+				where material_custom_order_id = $2;
+
+				output_msg:='Successfully';
+			else
+				update tracker_orders_material set department_recycled = 'Y' ,department_returned_date = current_timestamp 
+				where order_id = $1;
+
+				output_msg:='Successfully';
+			end if; 
+
+		elsif v_parameter = 'REJECT' THEN
+
+			if v_customise = 'Y' THEN
+				update tracker_custom_orders_material set department_rejected = 'Y' ,department_returned_date = current_timestamp, department_not_accepted_reason=v_department_not_accepted_reason
+				where material_custom_order_id = $2;
+
+				output_msg:='Successfully';
+			else
+
+				update tracker_orders_material set department_rejected = 'Y' ,department_returned_date = current_timestamp , department_not_accepted_reason=v_department_not_accepted_reason
+				where order_id = $1;
+
+				output_msg:='Successfully';
+			end if; 
+		END IF;
+END
+LANGUAGE plpgsql;
+
