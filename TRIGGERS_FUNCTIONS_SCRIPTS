@@ -1,0 +1,159 @@
+CREATE OR REPLACE FUNCTION func_trg_update_style_items_total_cost()
+  RETURNS trigger AS
+$BODY$
+BEGIN
+	UPDATE  CM_STYLE_ITEMS SET total_cost=total_cost+NEW.total_cost WHERE style_item_id=NEW.style_item_id;
+	
+RETURN NEW;
+
+END;
+$BODY$
+  LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION func_trg_cc_product_life_cycle_save_items()
+  RETURNS trigger AS
+BEGIN
+
+	INSERT INTO CC_PRODUCT_LIFE_CYCLE
+
+	(
+
+	  product_code,
+
+	  transaction_id,
+
+	  item_code,
+
+	  cc_product_life_cycle_task_id,
+
+	  cc_product_life_cycle_status_id,
+
+	  start_date,
+
+	  last_task_date,
+
+	  order_no
+
+	)
+
+	select 
+
+	cpid.product_code AS product_code,
+
+	scpim.transaction_id AS transaction_id,
+
+	v_sci.item_code AS item_code,
+
+	1,
+
+	1,
+
+	scpm.created_date AS start_date,
+
+	scpm.created_date AS last_task_date,
+
+	NULL
+
+	FROM 
+
+	CM_PRODUCTION_INFO_DETAILS cpid
+
+	join vw_style_ccode_items v_sci on cpid.product_code=v_sci.product_code and cpid.work_order_planned='Y'
+
+	left join SC_CATEGORY_PLANNING_ITEMS_MASTER scpim on scpim.item_code=v_sci.item_code
+
+	join sc_category_planning_master scpm on scpim.category_planning_id=scpm.category_planning_id and scpm.product_code=cpid.product_code
+
+	WHERE v_sci.item_code=NEW.item_code;
+
+
+
+RETURN NEW;
+
+END;
+
+  LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION func_trg_cc_product_life_cycle_save_status_history()
+  RETURNS trigger AS
+
+BEGIN
+
+
+
+	INSERT INTO CC_PRODUCT_LIFE_CYCLE_STATUS_HISTORY
+
+	(
+
+	  cc_product_life_cycle_id,
+
+	  old_life_cycle_status_id,
+
+	  new_life_cycle_status_id,
+
+	  old_life_cycle_task_id,
+
+	  new_life_cycle_task_id,
+
+	  status_changed_date
+
+	)
+
+	select 
+
+	NEW.cc_product_life_cycle_id,
+
+	OLD.cc_product_life_cycle_status_id,
+
+	NEW.cc_product_life_cycle_status_id,
+
+	OLD.cc_product_life_cycle_task_id,
+
+	NEW.cc_product_life_cycle_task_id,
+
+	CURRENT_TIMESTAMP;
+
+
+
+RETURN NEW;
+
+END;
+
+  LANGUAGE plpgsql;
+
+——————————————————————————————————————————  
+
+CREATE TRIGGER trg_update_cm_item_cost_for_fabric
+  AFTER UPDATE
+  ON cm_item_fabric_details
+  FOR EACH ROW
+  EXECUTE PROCEDURE func_trg_update_style_items_total_cost();
+
+CREATE TRIGGER trg_update_cm_item_cost_for_material
+  AFTER UPDATE
+  ON cm_item_material_details
+  FOR EACH ROW
+  EXECUTE PROCEDURE func_trg_update_style_items_total_cost();
+
+CREATE TRIGGER trg_update_cm_item_cost_for_dye
+  AFTER UPDATE
+  ON cm_item_dye_details
+  FOR EACH ROW
+  EXECUTE PROCEDURE func_trg_update_style_items_total_cost();
+
+CREATE TRIGGER trg_update_cm_item_cost_for_print
+  AFTER UPDATE
+  ON cm_item_printing_details
+  FOR EACH ROW
+  EXECUTE PROCEDURE func_trg_update_style_items_total_cost();
+
+CREATE TRIGGER trg_update_cm_item_cost_for_embroidery
+  AFTER UPDATE
+  ON cm_item_embroidery_details
+  FOR EACH ROW
+  EXECUTE PROCEDURE func_trg_update_style_items_total_cost();
+
+
+
