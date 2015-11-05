@@ -1366,7 +1366,8 @@ CREATE OR REPLACE VIEW vw_tracker_requisition_material AS
     vw_notification_material.cat_custom_dept_changed,
     vw_notification_material.asis_dept_changed,
     vw_notification_material.item_approved,
-    material_item_approved
+    vw_notification_material.material_item_approved,
+    vw_notification_material.designer_code
    FROM ( SELECT cat.category_planning_id,
             cat.product_codes,
             cat.production_type,
@@ -1381,6 +1382,7 @@ CREATE OR REPLACE VIEW vw_tracker_requisition_material AS
             cat.style_item_name,
             cat.style_code,
             cat.color_code,
+            cat.designer_code,
             cat.color,
             cat.style_item_quantity,
             cat.style_item_std_unit,
@@ -1395,7 +1397,6 @@ CREATE OR REPLACE VIEW vw_tracker_requisition_material AS
             cat.material_colour,
             cat.material_type,
             cat.material_std_unit,
-            --cat.material_quantity,
             cat.sc_asis_plan_material_item_id,
             cat.mat_trans_id,
             cat.asis_material_total_quantity,
@@ -1423,11 +1424,16 @@ CREATE OR REPLACE VIEW vw_tracker_requisition_material AS
             dept.dept_custom_material_delivery_min_date,
             dept.dept_custom_material_delivery_max_date
            FROM vw_notification_asis_cat_custom_material cat
-             LEFT JOIN vw_notification_asis_dept_custom_material dept ON cat.transaction_id::text = dept.transaction_id::text AND cat.cat_custom_plan_material_item_id = dept.sc_custom_plan_material_item_id
-) vw_notification_material
-WHERE transaction_id NOT IN (SELECT transaction_id FROM tracker_requisition_material)
+             LEFT JOIN vw_notification_asis_dept_custom_material dept ON cat.transaction_id::text = dept.transaction_id::text AND cat.cat_custom_plan_material_item_id = dept.sc_custom_plan_material_item_id) vw_notification_material
+WHERE 
+(
+CASE 
+WHEN custom='N' THEN sc_asis_plan_material_item_id NOT IN (SELECT sc_asis_plan_material_item_id FROM tracker_requisition_material)
+WHEN custom='Y' AND cat_custom_dept_changed='N' THEN cat_custom_plan_material_item_id NOT IN (SELECT sc_custom_plan_material_item_id FROM tracker_requisition_material)
+WHEN custom='Y' AND cat_custom_dept_changed='Y' THEN sc_custom_dept_plan_material_item_id NOT IN (SELECT sc_custom_dept_plan_material_item_id FROM tracker_requisition_material)
+END
+) 
   ORDER BY vw_notification_material.category_planning_id;
-
 
 CREATE OR REPLACE VIEW vw_tracker_requisition_dye AS 
  SELECT sub.category_planning_id,
@@ -1458,7 +1464,8 @@ CREATE OR REPLACE VIEW vw_tracker_requisition_dye AS
     sub.cat_custom_dept_changed,
     sub.asis_dept_changed,
     sub.item_approved,
-    sub.dye_item_approved
+    sub.dye_item_approved,
+    sub.designer_code
    FROM ( SELECT vw_req_dye.category_planning_id,
             vw_req_dye.product_codes,
             vw_req_dye.production_type,
@@ -1487,7 +1494,8 @@ CREATE OR REPLACE VIEW vw_tracker_requisition_dye AS
             vw_req_dye.cat_custom_dept_changed,
             vw_req_dye.asis_dept_changed,
             vw_req_dye.item_approved,
-            vw_req_dye.dye_item_approved
+            vw_req_dye.dye_item_approved,
+            vw_req_dye.designer_code
            FROM ( SELECT vw_notification_dye.category_planning_id,
                     vw_notification_dye.product_codes,
                     vw_notification_dye.production_type,
@@ -1496,6 +1504,7 @@ CREATE OR REPLACE VIEW vw_tracker_requisition_dye AS
                     vw_notification_dye.category_name,
                     vw_notification_dye.style_code,
                     vw_notification_dye.color_code,
+                    vw_notification_dye.designer_code,
                     vw_notification_dye.dye_code,
                     vw_notification_dye.fabric_name,
                     vw_notification_dye.fabric_type,
@@ -1571,6 +1580,7 @@ CREATE OR REPLACE VIEW vw_tracker_requisition_dye AS
                             cat.style_item_name,
                             cat.style_code,
                             cat.color_code,
+                            cat.designer_code,
                             cat.color,
                             cat.style_item_quantity,
                             cat.style_item_std_unit,
@@ -1637,11 +1647,16 @@ CREATE OR REPLACE VIEW vw_tracker_requisition_dye AS
                     tracker_requisition_dye requis
                   WHERE custom_requis.dye_requisition_id = requis.dye_requisition_id
                   GROUP BY requis.transaction_id) req_dye ON req_dye.transaction_id::text = vw_req_dye.transaction_id::text) sub
-  WHERE 
-(sub.dye_total_length_metre <> 0::double precision OR sub.dye_total_width_inch <> 0::double precision OR sub.dye_total_pcs <> 0) AND 
-sub.dye_total_measurement <> 0::double precision
-AND transaction_id NOT IN (SELECT transaction_id FROM tracker_requisition_dye);
-
+  WHERE (sub.dye_total_length_metre <> 0::double precision OR sub.dye_total_width_inch <> 0::double precision OR sub.dye_total_pcs <> 0) AND sub.dye_total_measurement <> 0::double precision 
+AND 
+(
+CASE 
+WHEN custom='N' THEN sc_asis_plan_dye_item_id NOT IN (SELECT sc_asis_plan_dye_item_id FROM tracker_requisition_dye)
+WHEN custom='Y' AND cat_custom_dept_changed='N' THEN cat_custom_plan_dye_item_id NOT IN (SELECT sc_custom_plan_dye_item_id FROM tracker_requisition_dye)
+WHEN custom='Y' AND cat_custom_dept_changed='Y' THEN sc_custom_dept_plan_dye_item_id NOT IN (SELECT sc_custom_dept_plan_dye_item_id FROM tracker_requisition_dye)
+END
+) 
+;
 
 
 CREATE OR REPLACE VIEW vw_tracker_requisition_embroidery AS 
@@ -1913,8 +1928,16 @@ CREATE OR REPLACE VIEW vw_tracker_requisition_embroidery AS
                     tracker_requisition_embroidery requis
                   WHERE custom_requis.embrd_requisition_id = requis.embrd_requisition_id
                   GROUP BY requis.transaction_id) req_embrd ON req_embrd.transaction_id::text = req_embrd.transaction_id::text) sub
-  WHERE (sub.embroidery_total_metre <> 0::double precision OR sub.embroidery_total_line <> 0::double precision OR sub.embroidery_total_length_inch1 <> 0::double precision OR sub.embroidery_total_pcs <> 0 OR sub.embroidery_total_width_inch2 <> 0::double precision OR sub.embroidery_total_set <> 0 OR sub.embroidery_total_height_inch3 <> 0::double precision) AND sub.embroidery_total_measurement <> 0::double precision
-  AND transaction_id NOT IN (SELECT transaction_id FROM tracker_requisition_embroidery);
+  WHERE (sub.embroidery_total_metre <> 0::double precision OR sub.embroidery_total_line <> 0::double precision OR sub.embroidery_total_length_inch1 <> 0::double precision OR sub.embroidery_total_pcs <> 0 OR sub.embroidery_total_width_inch2 <> 0::double precision 
+OR sub.embroidery_total_set <> 0 OR sub.embroidery_total_height_inch3 <> 0::double precision) AND sub.embroidery_total_measurement <> 0::double precision 
+AND 
+(
+CASE 
+WHEN custom='N' THEN sc_asis_plan_embrd_item_id NOT IN (SELECT sc_asis_plan_embrd_item_id FROM tracker_requisition_embroidery)
+WHEN custom='Y' AND cat_custom_dept_changed='N' THEN cat_custom_plan_embrd_item_id NOT IN (SELECT sc_custom_plan_embd_item_id FROM tracker_requisition_embroidery)
+WHEN custom='Y' AND cat_custom_dept_changed='Y' THEN sc_custom_dept_plan_emrd_item_id NOT IN (SELECT sc_custom_dept_plan_emrd_item_id FROM tracker_requisition_embroidery)
+END
+) ;
 
 
 
@@ -1995,7 +2018,8 @@ CREATE OR REPLACE VIEW vw_tracker_requisition_fabric AS
     vw_notification_fabric.cat_custom_dept_changed,
     vw_notification_fabric.asis_dept_changed,
     vw_notification_fabric.item_approved,
-    vw_notification_fabric.fabric_item_approved
+    vw_notification_fabric.fabric_item_approved,
+    vw_notification_fabric.designer_code
    FROM ( SELECT cat.category_planning_id,
             cat.product_codes,
             cat.production_type,
@@ -2010,6 +2034,7 @@ CREATE OR REPLACE VIEW vw_tracker_requisition_fabric AS
             cat.style_item_name,
             cat.style_code,
             cat.color_code,
+            cat.designer_code,
             cat.color,
             cat.style_item_quantity,
             cat.style_item_std_unit,
@@ -2063,10 +2088,17 @@ CREATE OR REPLACE VIEW vw_tracker_requisition_fabric AS
             dept.dept_custom_fabric_delivery_min_date,
             dept.dept_custom_fabric_delivery_max_date
            FROM vw_notification_asis_cat_custom_fabric cat
-             LEFT JOIN vw_notification_asis_dept_custom_fabric dept ON cat.transaction_id::text = dept.transaction_id::text AND cat.cat_custom_plan_fabric_item_id = dept.sc_custom_plan_fabric_item_id
-) vw_notification_fabric
-WHERE transaction_id NOT IN (SELECT transaction_id FROM tracker_requisition_fabric)
-  ORDER BY vw_notification_fabric.category_planning_id;
+             LEFT JOIN vw_notification_asis_dept_custom_fabric dept ON cat.transaction_id::text = dept.transaction_id::text AND cat.cat_custom_plan_fabric_item_id = dept.sc_custom_plan_fabric_item_id) vw_notification_fabric
+  WHERE  
+(
+CASE 
+WHEN custom='N' THEN sc_asis_plan_fabric_item_id NOT IN (SELECT sc_asis_plan_fabric_item_id FROM tracker_requisition_fabric)
+WHEN custom='Y' AND cat_custom_dept_changed='N' THEN cat_custom_plan_fabric_item_id NOT IN (SELECT sc_custom_plan_fabric_item_id FROM tracker_requisition_fabric)
+WHEN custom='Y' AND cat_custom_dept_changed='Y' THEN sc_custom_dept_plan_fabric_item_id NOT IN (SELECT sc_custom_dept_plan_fabric_item_id FROM tracker_requisition_fabric)
+END
+) 
+ ORDER BY vw_notification_fabric.category_planning_id;
+
 
 
 
@@ -2101,7 +2133,8 @@ CREATE OR REPLACE VIEW vw_tracker_requisition_print AS
     sub.cat_custom_dept_changed,
     sub.asis_dept_changed,
     sub.item_approved,
-    sub.print_item_approved
+    sub.print_item_approved,
+    sub.designer_code
    FROM ( SELECT vw_req_print.category_planning_id,
             vw_req_print.product_codes,
             vw_req_print.production_type,
@@ -2132,7 +2165,8 @@ CREATE OR REPLACE VIEW vw_tracker_requisition_print AS
             vw_req_print.cat_custom_dept_changed,
             vw_req_print.asis_dept_changed,
             vw_req_print.item_approved,
-            vw_req_print.print_item_approved
+            vw_req_print.print_item_approved,
+            vw_req_print.designer_code
            FROM ( SELECT vw_notification_print.category_planning_id,
                     vw_notification_print.product_codes,
                     vw_notification_print.production_type,
@@ -2203,7 +2237,8 @@ CREATE OR REPLACE VIEW vw_tracker_requisition_print AS
                     vw_notification_print.cat_custom_dept_changed,
                     vw_notification_print.asis_dept_changed,
                     vw_notification_print.item_approved,
-                    vw_notification_print.print_item_approved
+                    vw_notification_print.print_item_approved,
+                    vw_notification_print.designer_code
                    FROM ( SELECT cat.category_planning_id,
                             cat.product_codes,
                             cat.production_type,
@@ -2269,7 +2304,8 @@ CREATE OR REPLACE VIEW vw_tracker_requisition_print AS
                             dept.dept_custom_print_issue_min_date,
                             dept.dept_custom_print_issue_max_date,
                             dept.dept_custom_print_delivery_min_date,
-                            dept.dept_custom_print_delivery_max_date
+                            dept.dept_custom_print_delivery_max_date,
+                            cat.designer_code
                            FROM vw_notification_asis_cat_custom_print cat
                              LEFT JOIN vw_notification_asis_dept_custom_print dept ON cat.transaction_id::text = dept.transaction_id::text AND cat.cat_custom_plan_print_item_id = dept.sc_custom_plan_print_item_id) vw_notification_print
                   ORDER BY vw_notification_print.category_planning_id) vw_req_print
@@ -2282,9 +2318,15 @@ CREATE OR REPLACE VIEW vw_tracker_requisition_print AS
                     tracker_requisition_print requis
                   WHERE custom_requis.print_requisition_id = requis.print_requisition_id
                   GROUP BY requis.transaction_id) req_print ON req_print.transaction_id::text = vw_req_print.transaction_id::text) sub
-  WHERE (sub.print_total_length_metre <> 0::double precision OR sub.print_total_width_inch <> 0::double precision OR sub.print_total_pcs <> 0) AND sub.print_total_measurement <> 0::double precision
-AND transaction_id NOT IN (SELECT transaction_id FROM tracker_requisition_print);
-
+  WHERE (sub.print_total_length_metre <> 0::double precision OR sub.print_total_width_inch <> 0::double precision OR sub.print_total_pcs <> 0) AND sub.print_total_measurement <> 0::double precision 
+AND 
+(
+CASE 
+WHEN custom='N' THEN sc_asis_plan_print_item_id NOT IN (SELECT sc_asis_plan_print_item_id FROM tracker_requisition_print)
+WHEN custom='Y' AND cat_custom_dept_changed='N' THEN cat_custom_plan_print_item_id NOT IN (SELECT cat_custom_plan_print_item_id FROM tracker_requisition_print)
+WHEN custom='Y' AND cat_custom_dept_changed='Y' THEN sc_custom_dept_plan_print_item_id NOT IN (SELECT sc_custom_dept_plan_print_item_id FROM tracker_requisition_print)
+END
+) ;
 
 
 
