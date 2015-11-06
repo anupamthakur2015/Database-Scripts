@@ -3191,4 +3191,282 @@ CREATE OR REPLACE VIEW vw_accepting_reject_details_embroidery AS
      JOIN tracker_requisition_embroidery requis ON orders.embrd_requisition_id = requis.embrd_requisition_id;
 
 
-	 
+CREATE OR REPLACE VIEW vw_accepting_reject_fabric AS 
+ SELECT vw_accepting_reject_details_fabric.fabric_requisition_id,
+    vw_accepting_reject_details_fabric.issue_min_date,
+    vw_accepting_reject_details_fabric.issue_max_date,
+    vw_accepting_reject_details_fabric.transaction_id,
+    vw_accepting_reject_details_fabric.delivery_min_date,
+    vw_accepting_reject_details_fabric.delivery_max_date,
+    vw_accepting_reject_details_fabric.category_name,
+    vw_accepting_reject_details_fabric.style_code,
+    vw_accepting_reject_details_fabric.designer_code,
+    vw_accepting_reject_details_fabric.color_code,
+    vw_accepting_reject_details_fabric.product_codes,
+    vw_accepting_reject_details_fabric.item_code,
+    vw_accepting_reject_details_fabric.production_types,
+    vw_accepting_reject_details_fabric.fabric_code,
+    vw_accepting_reject_details_fabric.fabric_name,
+    vw_accepting_reject_details_fabric.fabric_type,
+    vw_accepting_reject_details_fabric.fabric_length,
+    vw_accepting_reject_details_fabric.fabric_width,
+    vw_accepting_reject_details_fabric.fabric_shrinkage,
+    vw_accepting_reject_details_fabric.fabric_pcs,
+    vw_accepting_reject_details_fabric.fabric_total_measurement,
+    vw_accepting_reject_details_fabric.approved,
+    vw_accepting_reject_details_fabric.order_id,
+    vw_accepting_reject_details_fabric.fabric_order_no,
+    vw_accepting_reject_details_fabric.customized,
+    vw_accepting_reject_details_fabric.custom_order_id,
+    vw_accepting_reject_details_fabric.custom_fabric_length,
+    vw_accepting_reject_details_fabric.custom_fabric_width,
+    vw_accepting_reject_details_fabric.custom_fabric_shrinkage,
+    vw_accepting_reject_details_fabric.custom_fabric_pcs,
+    vw_accepting_reject_details_fabric.custom_fabric_total_measurement,
+    vw_accepting_reject_details_fabric.designer_not_accepted_reason,
+    vw_accepting_reject_details_fabric.designer_not_accepted_date,
+    vw_accepting_reject_details_fabric.issued,
+    vw_accepting_reject_details_fabric.delivered,
+    vw_accepting_reject_details_fabric.designer_received,
+    vw_accepting_reject_details_fabric.designer_rejected,
+    vw_accepting_reject_details_fabric.department_returned_Date,
+    vw_accepting_reject_details_fabric.department_not_accepted_reason,
+    vw_accepting_reject_details_fabric.department_rejected
+   FROM vw_accepting_reject_details_fabric
+  WHERE vw_accepting_reject_details_fabric.issued = 'Y' AND 	 
+	((vw_accepting_reject_details_fabric.designer_received IS NULL AND vw_accepting_reject_details_fabric.delivered = 'Y' AND
+	vw_accepting_reject_details_fabric.designer_rejected = 'Y') OR department_rejected='Y');
+
+
+CREATE OR REPLACE VIEW vw_accepting_reject_material AS 
+ SELECT vw_accepting_reject_details_material.material_requisition_id,
+    vw_accepting_reject_details_material.issue_min_date,
+    vw_accepting_reject_details_material.issue_max_date,
+    vw_accepting_reject_details_material.transaction_id,
+    vw_accepting_reject_details_material.delivery_min_date,
+    vw_accepting_reject_details_material.delivery_max_date,
+    vw_accepting_reject_details_material.category_name,
+    vw_accepting_reject_details_material.style_code,
+    vw_accepting_reject_details_material.designer_code,
+    vw_accepting_reject_details_material.color_code,
+    vw_accepting_reject_details_material.product_codes,
+    vw_accepting_reject_details_material.item_code,
+    vw_accepting_reject_details_material.production_types,
+    vw_accepting_reject_details_material.material_code,
+    vw_accepting_reject_details_material.material_type,
+    vw_accepting_reject_details_material.material_colour,
+    vw_accepting_reject_details_material.material_total_quantity,
+    vw_accepting_reject_details_material.total_amount,
+    vw_accepting_reject_details_material.sample_reference,
+    vw_accepting_reject_details_material.approved,
+    vw_accepting_reject_details_material.order_id,
+    vw_accepting_reject_details_material.material_order_no,
+    vw_accepting_reject_details_material.customized,
+    vw_accepting_reject_details_material.custom_order_id,
+    vw_accepting_reject_details_material.custom_material_total_quantity,
+    vw_accepting_reject_details_material.custom_total_amount,
+    vw_accepting_reject_details_material.designer_not_accepted_reason,
+    vw_accepting_reject_details_material.designer_not_accepted_date,
+    vw_accepting_reject_details_material.issued,
+    vw_accepting_reject_details_material.delivered,
+    vw_accepting_reject_details_material.designer_received,
+    vw_accepting_reject_details_material.designer_rejected,
+    vw_accepting_reject_details_material.department_returned_Date,
+    vw_accepting_reject_details_material.department_not_accepted_reason,
+    vw_accepting_reject_details_material.department_rejected,    
+   FROM vw_accepting_reject_details_material
+  WHERE 
+vw_accepting_reject_details_material.issued = 'Y' AND 
+((vw_accepting_reject_details_material.delivered = 'Y' AND 
+vw_accepting_reject_details_material.designer_received IS NULL AND 
+vw_accepting_reject_details_material.designer_rejected = 'Y') OR department_rejected='Y');
+
+
+CREATE OR REPLACE VIEW vw_accepting_reject_dye AS 
+ SELECT vw_accepting_reject_details_dye.order_id,
+    vw_accepting_reject_details_dye.dye_custom_order_id,
+    vw_accepting_reject_details_dye.dye_order_no,
+    vw_accepting_reject_details_dye.dye_requisition_id,
+    vw_accepting_reject_details_dye.dye_custom_requisition_id,
+    vw_accepting_reject_details_dye.customized,
+    vw_accepting_reject_details_dye.custom_requisition,
+    vw_accepting_reject_details_dye.actual_issued_date,
+    vw_accepting_reject_details_dye.actual_delivery_date,
+    vw_accepting_reject_details_dye.issue_min_date,
+    vw_accepting_reject_details_dye.issue_max_date,
+    vw_accepting_reject_details_dye.transaction_id,
+    vw_accepting_reject_details_dye.delivery_min_date,
+    vw_accepting_reject_details_dye.delivery_max_date,
+    vw_accepting_reject_details_dye.category_name,
+    vw_accepting_reject_details_dye.style_code,
+    vw_accepting_reject_details_dye.designer_code,
+    vw_accepting_reject_details_dye.color_code,
+    vw_accepting_reject_details_dye.product_codes,
+    vw_accepting_reject_details_dye.item_code,
+    vw_accepting_reject_details_dye.production_types,
+    vw_accepting_reject_details_dye.dye_code,
+    vw_accepting_reject_details_dye.fabric_code,
+    vw_accepting_reject_details_dye.fabric_name,
+    vw_accepting_reject_details_dye.fabric_type,
+    vw_accepting_reject_details_dye.dye_length,
+    vw_accepting_reject_details_dye.dye_width,
+    vw_accepting_reject_details_dye.dye_pcs,
+    vw_accepting_reject_details_dye.dye_total_measurement,
+    vw_accepting_reject_details_dye.designer_not_accepted_reason,
+    vw_accepting_reject_details_dye.designer_not_accepted_date,
+    vw_accepting_reject_details_dye.issued,
+    vw_accepting_reject_details_dye.custom_order_id,
+    vw_accepting_reject_details_dye.custom_designer_received,
+    vw_accepting_reject_details_dye.designer_rejected,
+    vw_accepting_reject_details_dye.designer_returned,
+    vw_accepting_reject_details_dye.delivered,
+    vw_accepting_reject_details_dye.designer_received,
+    vw_accepting_reject_details_dye.department_rejected,
+    vw_accepting_reject_details_dye.department_not_accepted_date,    
+    vw_accepting_reject_details_dye.department_not_accepted_reason
+   FROM vw_accepting_reject_details_dye
+  WHERE vw_accepting_reject_details_dye.issued = 'Y'::bpchar AND 
+(
+	(vw_accepting_reject_details_dye.custom_order_id IS NOT NULL AND 
+	vw_accepting_reject_details_dye.custom_designer_received IS NULL AND vw_accepting_reject_details_dye.designer_rejected = 'Y'::bpchar AND 
+	vw_accepting_reject_details_dye.designer_returned IS NULL)
+	OR
+	(
+	  department_rejected='Y'
+	)
+	/*OR vw_accepting_reject_details_dye.delivered = 'Y' AND 
+	vw_accepting_reject_details_dye.designer_received IS NULL
+	*/
+);
+
+
+
+CREATE OR REPLACE VIEW vw_accepting_reject_embroidery AS 
+ SELECT vw_accepting_reject_details_embroidery.order_id,
+    vw_accepting_reject_details_embroidery.embrd_custom_order_id,
+    vw_accepting_reject_details_embroidery.embrd_order_no,
+    vw_accepting_reject_details_embroidery.embrd_requisition_id,
+    vw_accepting_reject_details_embroidery.embrd_custom_requisition_id,
+    vw_accepting_reject_details_embroidery.customized,
+    vw_accepting_reject_details_embroidery.custom_requisition,
+    vw_accepting_reject_details_embroidery.actual_issued_date,
+    vw_accepting_reject_details_embroidery.actual_delivery_date,
+    vw_accepting_reject_details_embroidery.issue_min_date,
+    vw_accepting_reject_details_embroidery.issue_max_date,
+    vw_accepting_reject_details_embroidery.transaction_id,
+    vw_accepting_reject_details_embroidery.delivery_min_date,
+    vw_accepting_reject_details_embroidery.delivery_max_date,
+    vw_accepting_reject_details_embroidery.category_name,
+    vw_accepting_reject_details_embroidery.style_code,
+    vw_accepting_reject_details_embroidery.designer_code,
+    vw_accepting_reject_details_embroidery.color_code,
+    vw_accepting_reject_details_embroidery.product_codes,
+    vw_accepting_reject_details_embroidery.item_code,
+    vw_accepting_reject_details_embroidery.production_types,
+    vw_accepting_reject_details_embroidery.embrd_code,
+    vw_accepting_reject_details_embroidery.embrd_desc,
+    vw_accepting_reject_details_embroidery.embrd_std_unit,
+    vw_accepting_reject_details_embroidery.fabric_name,
+    vw_accepting_reject_details_embroidery.fabric_base_colour,
+    vw_accepting_reject_details_embroidery.material_reference,
+    vw_accepting_reject_details_embroidery.embrd_total_metre,
+    vw_accepting_reject_details_embroidery.embrd_total_pcs,
+    vw_accepting_reject_details_embroidery.embrd_total_set,
+    vw_accepting_reject_details_embroidery.embrd_total_line,
+    vw_accepting_reject_details_embroidery.embrd_total_length_inch1,
+    vw_accepting_reject_details_embroidery.embrd_total_width_inch2,
+    vw_accepting_reject_details_embroidery.embrd_total_height_inch3,
+    vw_accepting_reject_details_embroidery.embrd_total_measurement,
+    vw_accepting_reject_details_embroidery.designer_not_accepted_reason,
+    vw_accepting_reject_details_embroidery.designer_not_accepted_date,
+    vw_accepting_reject_details_embroidery.issued,
+    vw_accepting_reject_details_embroidery.custom_order_id,
+    vw_accepting_reject_details_embroidery.custom_designer_received,
+    vw_accepting_reject_details_embroidery.designer_rejected,
+    vw_accepting_reject_details_embroidery.designer_returned,
+    vw_accepting_reject_details_embroidery.delivered,
+    vw_accepting_reject_details_embroidery.designer_received,
+    vw_accepting_reject_details_embroidery.department_rejected,
+    vw_accepting_reject_details_embroidery.department_not_accepted_date,
+    vw_accepting_reject_details_embroidery.department_not_accepted_reason
+   FROM vw_accepting_reject_details_embroidery
+  WHERE 
+vw_accepting_reject_details_embroidery.issued = 'Y'::bpchar AND 
+(
+	(vw_accepting_reject_details_embroidery.custom_order_id IS NOT NULL AND 
+	vw_accepting_reject_details_embroidery.custom_designer_received IS NULL AND 
+	vw_accepting_reject_details_embroidery.designer_rejected = 'Y'::bpchar AND 
+	vw_accepting_reject_details_embroidery.designer_returned IS NULL)
+	OR
+	(
+		department_rejected='Y'
+	)
+	
+	/*OR vw_accepting_reject_details_embroidery.delivered = 'Y'::bpchar AND 
+	vw_accepting_reject_details_embroidery.designer_received IS NULL*/
+);
+
+
+CREATE OR REPLACE VIEW vw_accepting_reject_print AS 
+ SELECT vw_accepting_reject_details_print.order_id,
+    vw_accepting_reject_details_print.print_custom_order_id,
+    vw_accepting_reject_details_print.print_order_no,
+    vw_accepting_reject_details_print.print_requisition_id,
+    vw_accepting_reject_details_print.print_custom_requisition_id,
+    vw_accepting_reject_details_print.customized,
+    vw_accepting_reject_details_print.custom_requisition,
+    vw_accepting_reject_details_print.actual_issued_date,
+    vw_accepting_reject_details_print.actual_delivery_date,
+    vw_accepting_reject_details_print.issue_min_date,
+    vw_accepting_reject_details_print.issue_max_date,
+    vw_accepting_reject_details_print.transaction_id,
+    vw_accepting_reject_details_print.delivery_min_date,
+    vw_accepting_reject_details_print.delivery_max_date,
+    vw_accepting_reject_details_print.category_name,
+    vw_accepting_reject_details_print.style_code,
+    vw_accepting_reject_details_print.designer_code,
+    vw_accepting_reject_details_print.color_code,
+    vw_accepting_reject_details_print.product_codes,
+    vw_accepting_reject_details_print.item_code,
+    vw_accepting_reject_details_print.production_types,
+    vw_accepting_reject_details_print.print_code,
+    vw_accepting_reject_details_print.printing_type,
+    vw_accepting_reject_details_print.print_colour,
+    vw_accepting_reject_details_print.num_screens_blocks,
+    vw_accepting_reject_details_print.num_colours,
+    vw_accepting_reject_details_print.print_length,
+    vw_accepting_reject_details_print.print_width,
+    vw_accepting_reject_details_print.print_pcs,
+    vw_accepting_reject_details_print.print_total_measurement,
+    vw_accepting_reject_details_print.designer_not_accepted_reason,
+    vw_accepting_reject_details_print.designer_not_accepted_date,
+    vw_accepting_reject_details_print.issued,
+    vw_accepting_reject_details_print.custom_order_id,
+    vw_accepting_reject_details_print.custom_designer_received,
+    vw_accepting_reject_details_print.designer_rejected,
+    vw_accepting_reject_details_print.designer_returned,
+    vw_accepting_reject_details_print.delivered,
+    vw_accepting_reject_details_print.designer_received,
+    vw_accepting_reject_details_print.department_rejected,
+    vw_accepting_reject_details_print.department_not_accepted_date,
+    vw_accepting_reject_details_print.department_not_accepted_reason
+   FROM vw_accepting_reject_details_print
+  WHERE 
+vw_accepting_reject_details_print.issued = 'Y'::bpchar AND 
+(
+	(vw_accepting_reject_details_print.custom_order_id IS NOT NULL AND 
+	vw_accepting_reject_details_print.custom_designer_received IS NULL AND 
+	vw_accepting_reject_details_print.designer_rejected = 'Y'::bpchar AND 
+	vw_accepting_reject_details_print.designer_returned IS NULL) 
+	/*OR 
+	(vw_accepting_reject_details_print.delivered='Y' AND 
+	vw_accepting_reject_details_print.designer_received IS NULL)*/
+	OR
+	(
+		department_rejected='Y'
+	)
+);
+	
+
+
+
