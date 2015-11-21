@@ -237,3 +237,1039 @@ BEGIN
 END
 LANGUAGE plpgsql;
 
+
+
+CREATE OR REPLACE FUNCTION func_sc_save_items_asis_dye(
+    IN tran_id character varying,
+    IN dye_total_length_metre double precision,
+    IN dye_total_width_inches double precision,
+    IN dye_total_pcs integer,
+    IN dye_total_measurement double precision,
+    IN dye_issue_min_date date,
+    IN dye_issue_max_date date,
+    IN dye_delivery_min_date date,
+    IN dye_delivery_max_date date,
+    IN created_by character varying,
+    IN updated_by character varying,
+    IN v_sc_asis_plan_dye_item_id integer,
+    IN style_dye_id integer,
+    IN style_fabric_id integer,
+    IN style_material_id integer,
+    OUT output_msg text,
+    OUT id integer)
+  RETURNS record AS
+$BODY$
+DECLARE
+  var_planning_main_item_id int;
+BEGIN   
+	
+	SELECT COALESCE(sc_planning_main_item_id,0) INTO STRICT var_planning_main_item_id 
+        FROM SC_CATEGORY_PLANNING_ITEMS_MASTER where transaction_id=$1;
+
+	DELETE FROM SC_CAT_PLAN_ITEMS_CUSTOM_dye WHERE transaction_id=$1 and sc_asis_plan_dye_item_id=v_sc_asis_plan_dye_item_id;
+	DELETE FROM SC_CATEGORY_PLANNING_ITEMS_ASIS_dye WHERE sc_asis_plan_dye_item_id=v_sc_asis_plan_dye_item_id;
+
+
+	INSERT INTO SC_CATEGORY_PLANNING_ITEMS_ASIS_DYE (
+		sc_planning_main_item_id ,
+		transaction_id ,
+		  dye_total_length_metre ,
+		  dye_total_width_inches ,
+		  dye_total_pcs ,
+		  dye_total_measurement ,
+		  dye_issue_min_date ,
+		  dye_issue_max_date ,
+		  dye_delivery_min_date ,
+		  dye_delivery_max_date ,
+		  created_by ,
+		  updated_by,
+		  style_dye_id,
+		  style_fabric_id,
+		  style_material_id
+		)
+		VALUES(			
+		var_planning_main_item_id,
+		$1,
+		$2,
+		$3,
+		$4,
+		$5,
+		$6,
+		$7,
+		$8,
+		$9,
+		$10,
+		$11,
+		$13,
+		$14,
+		$15
+		) RETURNING sc_asis_plan_dye_item_id into id;
+		output_msg:='Successfully inserted';		
+END
+$BODY$
+  LANGUAGE plpgsql;
+
+
+
+CREATE OR REPLACE FUNCTION func_sc_save_items_asis_embroidery(
+    IN tran_id character varying,
+    IN embroidery_total_metre double precision,
+    IN embroidery_total_pcs integer,
+    IN embroidery_total_set integer,
+    IN embroidery_total_line double precision,
+    IN embroidery_total_length_inch1 double precision,
+    IN embroidery_total_width_inch2 double precision,
+    IN embroidery_total_height_inch3 double precision,
+    IN embroidery_total_measurement double precision,
+    IN embroidery_issue_min_date date,
+    IN embroidery_issue_max_date date,
+    IN embroidery_delivery_min_date date,
+    IN embroidery_delivery_max_date date,
+    IN created_by character varying,
+    IN updated_by character varying,
+    IN v_sc_asis_plan_embroidery_item_id integer,
+    IN style_embroidery_id integer,
+    IN style_fabric_id integer,
+    OUT output_msg text,
+    OUT id integer)
+  RETURNS record AS
+$BODY$
+DECLARE
+  var_planning_main_item_id int;
+BEGIN   
+	
+	SELECT COALESCE(sc_planning_main_item_id,0) INTO STRICT var_planning_main_item_id 
+        FROM SC_CATEGORY_PLANNING_ITEMS_MASTER where transaction_id=$1;
+
+	
+	DELETE FROM SC_CAT_PLAN_ITEMS_CUSTOM_embrd WHERE transaction_id=$1 and sc_asis_plan_embrd_item_id=v_sc_asis_plan_EMBROIDERY_item_id;
+	DELETE FROM SC_CATEGORY_PLANNING_ITEMS_ASIS_EMBROIDERY WHERE sc_asis_plan_embrd_item_id=v_sc_asis_plan_EMBROIDERY_item_id;
+
+
+	INSERT INTO SC_CATEGORY_PLANNING_ITEMS_ASIS_EMBROIDERY (
+		sc_planning_main_item_id ,
+		transaction_id ,
+		  embroidery_total_metre ,
+		  embroidery_total_pcs ,
+		  embroidery_total_set ,
+		  embroidery_total_line ,
+		  embroidery_total_length_inch1 ,
+		  embroidery_total_width_inch2 ,
+		  embroidery_total_height_inch3 ,
+		  embroidery_total_measurement ,
+		  embroidery_issue_min_date ,
+		  embroidery_issue_max_date ,
+		  embroidery_delivery_min_date ,
+		  embroidery_delivery_max_date ,
+		  created_by ,
+		  updated_by ,
+		  style_embroidery_id,
+		  style_fabric_id
+		)
+		VALUES(			
+		var_planning_main_item_id,
+		$1,
+		$2,
+		$3,
+		$4,
+		$5,
+		$6,
+		$7,
+		$8,
+		$9,
+		$10,
+		$11,
+		$12,
+		$13,
+		$14,
+		$15,
+		$17,
+		$18	
+		) RETURNING sc_asis_plan_embrd_item_id into id;
+		output_msg:='Successfully inserted';		
+END
+$BODY$
+  LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION func_sc_save_items_asis_fabric(
+    IN tran_id character varying,
+    IN fabric_total_length_metre double precision,
+    IN fabric_total_width_inch double precision,
+    IN fabric_total_shrinkage_metre double precision,
+    IN fabric_total_pcs integer,
+    IN fabric_total_measurement double precision,
+    IN fabric_issue_min_date date,
+    IN fabric_issue_max_date date,
+    IN fabric_delivery_min_date date,
+    IN fabric_delivery_max_date date,
+    IN created_by character varying,
+    IN updated_by character varying,
+    IN v_sc_asis_plan_fabric_item_id integer,
+    IN style_fabric_id integer,
+    OUT output_msg text,
+    OUT id integer)
+  RETURNS record AS
+$BODY$
+DECLARE
+  var_planning_main_item_id int;
+BEGIN   
+	
+	SELECT COALESCE(sc_planning_main_item_id,0) INTO STRICT var_planning_main_item_id 
+        FROM SC_CATEGORY_PLANNING_ITEMS_MASTER where transaction_id=$1;
+
+	DELETE FROM SC_CAT_PLAN_ITEMS_CUSTOM_FABRIC WHERE transaction_id=$1 and sc_asis_plan_fabric_item_id=v_sc_asis_plan_fabric_item_id;
+	DELETE FROM SC_CATEGORY_PLANNING_ITEMS_ASIS_FABRIC WHERE sc_asis_plan_fabric_item_id=v_sc_asis_plan_fabric_item_id;
+
+	INSERT INTO SC_CATEGORY_PLANNING_ITEMS_ASIS_FABRIC (
+		sc_planning_main_item_id ,
+		transaction_id ,
+		  fabric_total_length_metre ,
+		  fabric_total_width_inch ,
+		  fabric_total_shrinkage_metre ,
+		  fabric_total_pcs ,
+		  fabric_total_measurement ,
+		  fabric_issue_min_date ,
+		  fabric_issue_max_date ,
+		  fabric_delivery_min_date ,
+		  fabric_delivery_max_date ,
+		  created_by ,
+		  updated_by ,
+		  style_fabric_id
+		)
+		VALUES(			
+		var_planning_main_item_id,
+		$1,
+		$2,
+		$3,
+		$4,
+		$5,
+		$6,
+		$7,
+		$8,
+		$9,
+		$10,
+		$11,
+		$12,
+		$14
+		) RETURNING sc_asis_plan_fabric_item_id into id;
+		output_msg:='Successfully inserted';	
+	
+END
+$BODY$
+  LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION func_sc_save_items_asis_material(
+    IN tran_id character varying,
+    IN material_total_quantity double precision,
+    IN material_issue_min_date date,
+    IN material_issue_max_date date,
+    IN material_delivery_min_date date,
+    IN material_delivery_max_date date,
+    IN created_by character varying,
+    IN updated_by character varying,
+    IN v_sc_asis_plan_material_item_id integer,
+    IN style_material_id integer,
+    OUT output_msg text,
+    OUT asis_plan_material_item_id integer)
+  RETURNS record AS
+$BODY$
+DECLARE
+  var_planning_main_item_id int;
+BEGIN   
+	
+	SELECT COALESCE(sc_planning_main_item_id,0) INTO STRICT var_planning_main_item_id 
+        FROM SC_CATEGORY_PLANNING_ITEMS_MASTER where transaction_id=$1;
+
+	DELETE FROM SC_CAT_PLAN_ITEMS_CUSTOM_MATERIAL WHERE transaction_id=$1 and sc_asis_plan_material_item_id=v_sc_asis_plan_material_item_id;
+	DELETE FROM SC_CATEGORY_PLANNING_ITEMS_ASIS_MATERIAL WHERE sc_asis_plan_material_item_id=v_sc_asis_plan_material_item_id;
+
+	RAISE NOTICE 'Insert Starts';
+	INSERT INTO SC_CATEGORY_PLANNING_ITEMS_ASIS_MATERIAL (
+		sc_planning_main_item_id ,
+		transaction_id ,
+		  material_total_quantity , 
+		  material_issue_min_date ,
+		  material_issue_max_date ,
+		  material_delivery_min_date ,
+		  material_delivery_max_date ,
+		  created_by ,
+		  updated_by ,
+		  style_material_id
+		)
+		VALUES(
+		var_planning_main_item_id,
+		$1,
+		$2,
+		$3,
+		$4,
+		$5,
+		$6,
+		$7,
+		$8,
+		$10
+		) RETURNING sc_asis_plan_material_item_id into asis_plan_material_item_id;
+		RAISE NOTICE 'Insert Ends - id="%"',asis_plan_material_item_id;
+		
+		--select currval('sc_category_planning_items_as_sc_asis_plan_material_item_id_seq'::regclass) into asis_plan_material_item_id;
+		RAISE NOTICE 'Curr Val ="%"',asis_plan_material_item_id;
+		output_msg:='Successfully inserted';		
+	
+END
+$BODY$
+  LANGUAGE plpgsql;
+
+
+
+CREATE OR REPLACE FUNCTION func_sc_save_items_asis_print(
+    IN tran_id character varying,
+    IN print_total_length_metre double precision,
+    IN print_total_width_inches double precision,
+    IN print_total_pcs integer,
+    IN print_total_measurement double precision,
+    IN print_issue_min_date date,
+    IN print_issue_max_date date,
+    IN print_delivery_min_date date,
+    IN print_delivery_max_date date,
+    IN created_by character varying,
+    IN updated_by character varying,
+    IN v_sc_asis_plan_print_item_id integer,
+    IN style_print_id integer,
+    OUT output_msg text,
+    OUT id integer)
+  RETURNS record AS
+$BODY$
+DECLARE
+  var_planning_main_item_id int;
+BEGIN   
+	
+	SELECT COALESCE(sc_planning_main_item_id,0) INTO STRICT var_planning_main_item_id 
+        FROM SC_CATEGORY_PLANNING_ITEMS_MASTER where transaction_id=$1;
+
+	
+	DELETE FROM SC_CAT_PLAN_ITEMS_CUSTOM_print WHERE transaction_id=$1 and sc_asis_plan_print_item_id=v_sc_asis_plan_print_item_id;
+	DELETE FROM SC_CATEGORY_PLANNING_ITEMS_ASIS_print WHERE sc_asis_plan_print_item_id=v_sc_asis_plan_print_item_id;
+
+	INSERT INTO SC_CATEGORY_PLANNING_ITEMS_ASIS_PRINT (
+		sc_planning_main_item_id ,
+		transaction_id ,
+		  print_total_length_metre ,
+		  print_total_width_inches ,
+		  print_total_pcs ,
+		  print_total_measurement ,
+		  print_issue_min_date ,
+		  print_issue_max_date ,
+		  print_delivery_min_date ,
+		  print_delivery_max_date ,
+		  created_by ,
+		  updated_by ,
+		  style_print_id
+		)
+		VALUES(			
+		var_planning_main_item_id,
+		$1,
+		$2,
+		$3,
+		$4,
+		$5,
+		$6,
+		$7,
+		$8,
+		$9,
+		$10,
+		$11,
+		$13
+		) RETURNING sc_asis_plan_print_item_id into id;
+		output_msg:='Successfully inserted';		
+END
+$BODY$
+  LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION func_sc_save_items_custom_dye(
+    IN tran_id character varying,
+    IN dye_total_length_metre double precision,
+    IN dye_total_width_inches double precision,
+    IN dye_total_pcs integer,
+    IN dye_total_measurement double precision,
+    IN dye_issue_min_date date,
+    IN dye_issue_max_date date,
+    IN dye_delivery_min_date date,
+    IN dye_delivery_max_date date,
+    IN created_by character varying,
+    IN updated_by character varying,
+    IN counter integer,
+    IN var_asis_plan_dye_item_id integer,
+    OUT output_msg text,
+    OUT custom_plan_dye_item_id integer)
+  RETURNS record AS
+$BODY$
+
+BEGIN   
+	
+	
+	if(counter = 1) then
+		DELETE FROM SC_CAT_PLAN_ITEMS_CUSTOM_DYE WHERE transaction_id=$1 and sc_asis_plan_dye_item_id=var_asis_plan_dye_item_id;
+		UPDATE sc_category_planning_items_asis_dye SET CUSTOM='Y' WHERE sc_asis_plan_dye_item_id = var_asis_plan_dye_item_id;
+		end if;
+		
+	
+
+	INSERT INTO SC_CAT_PLAN_ITEMS_CUSTOM_DYE (
+	sc_asis_plan_dye_item_id ,
+		transaction_id ,
+		  dye_total_length_metre ,
+		  dye_total_width_inches ,
+		  dye_total_pcs ,
+		  dye_total_measurement ,
+		  dye_issue_min_date ,
+		  dye_issue_max_date ,
+		  dye_delivery_min_date ,
+		  dye_delivery_max_date ,
+		  created_by ,
+		  updated_by 
+		)
+		VALUES(	
+var_asis_plan_dye_item_id,		
+		$1,
+		$2,
+		$3,
+		$4,
+		$5,
+		$6,
+		$7,
+		$8,
+		$9,
+		$10,
+		$11
+		) RETURNING sc_custom_plan_dye_item_id into custom_plan_dye_item_id;
+		output_msg:='Successfully inserted';		
+END
+$BODY$
+  LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION func_sc_save_items_custom_embroidery(
+    IN tran_id character varying,
+    IN embroidery_total_metre double precision,
+    IN embroidery_total_pcs integer,
+    IN embroidery_total_set integer,
+    IN embroidery_total_line double precision,
+    IN embroidery_total_length_inch1 double precision,
+    IN embroidery_total_width_inch2 double precision,
+    IN embroidery_total_height_inch3 double precision,
+    IN embroidery_total_measurement double precision,
+    IN embroidery_issue_min_date date,
+    IN embroidery_issue_max_date date,
+    IN embroidery_delivery_min_date date,
+    IN embroidery_delivery_max_date date,
+    IN created_by character varying,
+    IN updated_by character varying,
+    IN counter integer,
+    IN var_asis_plan_embrd_item_id integer,
+    OUT output_msg text,
+    OUT custom_plan_embrd_item_id integer)
+  RETURNS record AS
+$BODY$
+BEGIN   
+	
+	if(counter = 1) then
+		DELETE FROM SC_CAT_PLAN_ITEMS_CUSTOM_EMBRD WHERE transaction_id=$1 and sc_asis_plan_embrd_item_id=var_asis_plan_embrd_item_id;
+		UPDATE sc_category_planning_items_asis_embroidery SET CUSTOM='Y' WHERE sc_asis_plan_embrd_item_id = var_asis_plan_embrd_item_id;
+	end if;
+		
+
+	INSERT INTO SC_CAT_PLAN_ITEMS_CUSTOM_EMBRD (
+		sc_asis_plan_embrd_item_id ,
+		transaction_id ,
+		  embroidery_total_metre ,
+		  embroidery_total_pcs ,
+		  embroidery_total_set ,
+		  embroidery_total_line ,
+		  embroidery_total_length_inch1 ,
+		  embroidery_total_width_inch2 ,
+		  embroidery_total_height_inch3 ,
+		  embroidery_total_measurement ,
+		  embroidery_issue_min_date ,
+		  embroidery_issue_max_date ,
+		  embroidery_delivery_min_date ,
+		  embroidery_delivery_max_date ,
+		  created_by ,
+		  updated_by
+		)
+		VALUES(			
+		var_asis_plan_embrd_item_id,
+		$1,
+		$2,
+		$3,
+		$4,
+		$5,
+		$6,
+		$7,
+		$8,
+		$9,
+		$10,
+		$11,
+		$12,
+		$13,
+		$14,
+		$15	
+		) RETURNING sc_custom_plan_embd_item_id into custom_plan_embrd_item_id;
+		output_msg:='Successfully inserted';		
+END
+$BODY$
+  LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION func_sc_save_items_custom_fabric(
+    IN tran_id character varying,
+    IN fabric_total_length_metre double precision,
+    IN fabric_total_width_inch double precision,
+    IN fabric_total_shrinkage_metre double precision,
+    IN fabric_total_pcs integer,
+    IN fabric_total_measurement double precision,
+    IN fabric_issue_min_date date,
+    IN fabric_issue_max_date date,
+    IN fabric_delivery_min_date date,
+    IN fabric_delivery_max_date date,
+    IN created_by character varying,
+    IN updated_by character varying,
+    IN counter integer,
+    IN var_asis_plan_fabric_item_id integer,
+    OUT output_msg text,
+    OUT custom_plan_fabric_item_id integer)
+  RETURNS record AS
+$BODY$
+
+BEGIN   
+	
+	if(counter = 1) then
+		DELETE FROM SC_CAT_PLAN_ITEMS_CUSTOM_FABRIC WHERE transaction_id=$1 and sc_asis_plan_fabric_item_id=var_asis_plan_fabric_item_id;
+		UPDATE sc_category_planning_items_asis_fabric SET CUSTOM='Y' WHERE sc_asis_plan_fabric_item_id = var_asis_plan_fabric_item_id;
+	end if;
+	
+	INSERT INTO SC_CAT_PLAN_ITEMS_CUSTOM_FABRIC (
+		sc_asis_plan_fabric_item_id ,
+		transaction_id ,
+		  fabric_total_length_metre ,
+		  fabric_total_width_inch ,
+		  fabric_total_shrinkage_metre ,
+		  fabric_total_pcs ,
+		  fabric_total_measurement ,
+		  fabric_issue_min_date ,
+		  fabric_issue_max_date ,
+		  fabric_delivery_min_date ,
+		  fabric_delivery_max_date ,
+		  created_by ,
+		  updated_by 
+		)
+		VALUES(			
+		var_asis_plan_fabric_item_id,
+		$1,
+		$2,
+		$3,
+		$4,
+		$5,
+		$6,
+		$7,
+		$8,
+		$9,
+		$10,
+		$11,
+		$12
+		) RETURNING sc_custom_plan_fabric_item_id into custom_plan_fabric_item_id;
+		output_msg:='Successfully inserted';	
+		
+		
+END
+$BODY$
+  LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION func_sc_save_items_custom_material(
+    IN tran_id character varying,
+    IN material_total_quantity double precision,
+    IN material_issue_min_date date,
+    IN material_issue_max_date date,
+    IN material_delivery_min_date date,
+    IN material_delivery_max_date date,
+    IN created_by character varying,
+    IN updated_by character varying,
+    IN counter integer,
+    IN var_asis_plan_material_item_id integer,
+    OUT output_msg text,
+    OUT custom_plan_material_item_id integer)
+  RETURNS record AS
+$BODY$
+
+BEGIN   
+	
+	
+	IF(COUNTER = 1) THEN	
+		DELETE FROM SC_CAT_PLAN_ITEMS_CUSTOM_MATERIAL WHERE transaction_id=$1 and sc_asis_plan_material_item_id=var_asis_plan_material_item_id;
+		UPDATE sc_category_planning_items_asis_MATERIAL SET CUSTOM='Y' WHERE sc_asis_plan_material_item_id = var_asis_plan_material_item_id;
+	
+	END IF;
+	
+	INSERT INTO SC_CAT_PLAN_ITEMS_CUSTOM_MATERIAL (
+		sc_asis_plan_material_item_id ,
+		transaction_id ,
+		  material_total_quantity , 
+		  material_issue_min_date ,
+		  material_issue_max_date ,
+		  material_delivery_min_date ,
+		  material_delivery_max_date ,
+		  created_by ,
+		  updated_by 
+		)
+		VALUES(
+		var_asis_plan_material_item_id,
+		$1,
+		$2,
+		$3,
+		$4,
+		$5,
+		$6,
+		$7,
+		$8
+		) RETURNING sc_custom_plan_material_item_id into custom_plan_material_item_id;
+		
+		output_msg:='Successfully inserted';		
+	
+END
+$BODY$
+  LANGUAGE plpgsql;
+
+
+
+CREATE OR REPLACE FUNCTION func_sc_save_items_custom_print(
+    IN tran_id character varying,
+    IN print_total_length_metre double precision,
+    IN print_total_width_inches double precision,
+    IN print_total_pcs integer,
+    IN print_total_measurement double precision,
+    IN print_issue_min_date date,
+    IN print_issue_max_date date,
+    IN print_delivery_min_date date,
+    IN print_delivery_max_date date,
+    IN created_by character varying,
+    IN updated_by character varying,
+    IN counter integer,
+    IN var_asis_plan_print_item_id integer,
+    OUT output_msg text,
+    OUT id integer)
+  RETURNS record AS
+$BODY$
+  
+BEGIN   
+	
+
+	if(counter = 1) then
+		DELETE FROM SC_CAT_PLAN_ITEMS_CUSTOM_PRINT WHERE transaction_id=$1 and sc_asis_plan_print_item_id=var_asis_plan_print_item_id;
+		UPDATE sc_category_planning_items_asis_print SET CUSTOM='Y' WHERE sc_asis_plan_print_item_id = var_asis_plan_print_item_id;
+	end if;
+
+	INSERT INTO SC_CAT_PLAN_ITEMS_CUSTOM_PRINT (
+		sc_asis_plan_print_item_id ,
+		transaction_id ,
+		  print_total_length_metre ,
+		  print_total_width_inches ,
+		  print_total_pcs ,
+		  print_total_measurement ,
+		  print_issue_min_date ,
+		  print_issue_max_date ,
+		  print_delivery_min_date ,
+		  print_delivery_max_date ,
+		  created_by ,
+		  updated_by 
+		)
+		VALUES(			
+		var_asis_plan_print_item_id,
+		$1,
+		$2,
+		$3,
+		$4,
+		$5,
+		$6,
+		$7,
+		$8,
+		$9,
+		$10,
+		$11
+		) RETURNING sc_custom_plan_print_item_id into id;
+		output_msg:='Successfully inserted';		
+END
+$BODY$
+  LANGUAGE plpgsql;
+
+
+
+
+CREATE OR REPLACE FUNCTION func_sc_save_items_dept_custom_dye(
+    IN tran_id character varying,
+    IN dye_total_length_metre double precision,
+    IN dye_total_width_inches double precision,
+    IN dye_total_pcs integer,
+    IN dye_total_measurement double precision,
+    IN dye_issue_min_date date,
+    IN dye_issue_max_date date,
+    IN dye_delivery_min_date date,
+    IN dye_delivery_max_date date,
+    IN created_by character varying,
+    IN updated_by character varying,
+    IN var_custom_plan_dye_item_id integer,
+    IN var_asis_plan_dye_item_id integer,
+    IN counter integer,
+    OUT output_msg text,
+    OUT custom_plan_dye_item_id integer)
+  RETURNS record AS
+$BODY$
+DECLARE
+  
+BEGIN
+
+if(var_custom_plan_dye_item_id is not null) then
+
+   DELETE FROM SC_DEPT_PLAN_ITEMS_CUSTOM_dye WHERE transaction_id=$1  and sc_custom_plan_dye_item_id = $12;
+   UPDATE SC_CAT_PLAN_ITEMS_CUSTOM_dye SET DEPT_CHANGED='Y' WHERE  transaction_id=$1 and sc_custom_plan_dye_item_id = $12;
+   UPDATE sc_category_planning_items_asis_dye SET  sent_for_approval='Y', DEPT_CHANGED='Y', CUSTOM = 'Y' WHERE  transaction_id=$1 and sc_asis_plan_dye_item_id=$13;
+
+elsif(counter = 1) then
+
+   DELETE FROM SC_DEPT_PLAN_ITEMS_CUSTOM_DYE WHERE transaction_id=$1  and sc_asis_plan_dye_item_id=$13;
+   UPDATE sc_category_planning_items_asis_dye SET  sent_for_approval='Y',DEPT_CHANGED='Y', CUSTOM = 'Y' WHERE  transaction_id=$1 and sc_asis_plan_dye_item_id=$13;
+
+end if;
+
+INSERT INTO SC_DEPT_PLAN_ITEMS_CUSTOM_DYE (
+	transaction_id ,
+	  dye_total_length_metre ,
+	  dye_total_width_inches ,
+	  dye_total_pcs ,
+	  dye_total_measurement ,
+	  dye_issue_min_date ,
+	  dye_issue_max_date ,
+	  dye_delivery_min_date ,
+	  dye_delivery_max_date ,
+	  created_by ,
+	  updated_by,
+	  sc_custom_plan_dye_item_id ,
+	  sc_asis_plan_dye_item_id
+	)
+	VALUES(
+	$1,
+	$2,
+	$3,
+	$4,
+	$5,
+	$6,
+	$7,
+	$8,
+	$9,
+	$10,
+	$11,
+	$12,
+	$13
+	) RETURNING sc_custom_dept_plan_dye_item_id into custom_plan_dye_item_id;
+	output_msg:='Successfully inserted';
+END
+$BODY$
+  LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION func_sc_save_items_dept_custom_embroidery(
+    IN tran_id character varying,
+    IN embroidery_total_metre double precision,
+    IN embroidery_total_pcs integer,
+    IN embroidery_total_set integer,
+    IN embroidery_total_line double precision,
+    IN embroidery_total_length_inch1 double precision,
+    IN embroidery_total_width_inch2 double precision,
+    IN embroidery_total_height_inch3 double precision,
+    IN embroidery_total_measurement double precision,
+    IN embroidery_issue_min_date date,
+    IN embroidery_issue_max_date date,
+    IN embroidery_delivery_min_date date,
+    IN embroidery_delivery_max_date date,
+    IN created_by character varying,
+    IN updated_by character varying,
+    IN var_custom_plan_embrd_item_id integer,
+    IN var_asis_plan_embrd_item_id integer,
+    IN counter integer,
+    OUT output_msg text,
+    OUT custom_plan_embrd_item_id integer)
+  RETURNS record AS
+$BODY$
+DECLARE
+  
+BEGIN   
+	
+	if(var_custom_plan_embrd_item_id is not null) then
+		   DELETE FROM SC_DEPT_PLAN_ITEMS_CUSTOM_EMBRD WHERE transaction_id=$1 and sc_custom_plan_embrd_item_id = $16;
+		   UPDATE SC_CAT_PLAN_ITEMS_CUSTOM_EMBRD SET DEPT_CHANGED='Y' WHERE transaction_id=$1 and sc_custom_plan_embrd_item_id = $16;
+		  UPDATE sc_category_planning_items_asis_embroidery SET sent_for_approval='Y', DEPT_CHANGED='Y', CUSTOM = 'Y' WHERE transaction_id=$1;
+	elsif(counter = 1) then
+		   DELETE FROM SC_DEPT_PLAN_ITEMS_CUSTOM_EMBRD WHERE transaction_id=$1 and sc_asis_plan_embrd_item_id=$17;
+		   UPDATE sc_category_planning_items_asis_embroidery SET sent_for_approval='Y',DEPT_CHANGED='Y', CUSTOM = 'Y' WHERE transaction_id=$1 and sc_asis_plan_embrd_item_id=$17;
+	end if;
+
+
+
+	INSERT INTO SC_DEPT_PLAN_ITEMS_CUSTOM_EMBRD (		
+		transaction_id ,
+		  embroidery_total_metre ,
+		  embroidery_total_pcs ,
+		  embroidery_total_set ,
+		  embroidery_total_line ,
+		  embroidery_total_length_inch1 ,
+		  embroidery_total_width_inch2 ,
+		  embroidery_total_height_inch3 ,
+		  embroidery_total_measurement ,
+		  embroidery_issue_min_date ,
+		  embroidery_issue_max_date ,
+		  embroidery_delivery_min_date ,
+		  embroidery_delivery_max_date ,
+		  created_by ,
+		  updated_by,
+		  sc_custom_plan_embrd_item_id ,
+		  sc_asis_plan_embrd_item_id		)
+		VALUES(			
+		$1,
+		$2,
+		$3,
+		$4,
+		$5,
+		$6,
+		$7,
+		$8,
+		$9,
+		$10,
+		$11,
+		$12,
+		$13,
+		$14,
+		$15,
+		$16,
+		$17	
+		) RETURNING sc_custom_dept_plan_embrd_item_id into custom_plan_embrd_item_id;
+		output_msg:='Successfully inserted';		
+END
+$BODY$
+  LANGUAGE plpgsql;
+
+
+
+CREATE OR REPLACE FUNCTION func_sc_save_items_dept_custom_fabric(
+    IN var_custom_plan_fabric_item_id integer,
+    IN var_asis_plan_fabric_item_id integer,
+    IN tran_id character varying,
+    IN fabric_total_length_metre double precision,
+    IN fabric_total_width_inch double precision,
+    IN fabric_total_shrinkage_metre double precision,
+    IN fabric_total_pcs integer,
+    IN fabric_total_measurement double precision,
+    IN fabric_issue_min_date date,
+    IN fabric_issue_max_date date,
+    IN fabric_delivery_min_date date,
+    IN fabric_delivery_max_date date,
+    IN created_by character varying,
+    IN updated_by character varying,
+    IN counter integer,
+    OUT output_msg text,
+    OUT custom_plan_fabric_item_id integer)
+  RETURNS record AS
+$BODY$
+
+BEGIN   
+
+	if(var_custom_plan_fabric_item_id is not null) then
+		DELETE FROM SC_DEPT_PLAN_ITEMS_CUSTOM_FABRIC WHERE transaction_id=$3 and sc_custom_plan_fabric_item_id=$1;
+		UPDATE SC_CAT_PLAN_ITEMS_CUSTOM_FABRIC SET DEPT_CHANGED='Y' WHERE transaction_id=$3 and sc_custom_plan_fabric_item_id=$1;
+		UPDATE sc_category_planning_items_asis_fabric SET sent_for_approval='Y', DEPT_CHANGED='Y', CUSTOM = 'Y' WHERE transaction_id=$3;
+	elsif(counter = 1) then
+		DELETE FROM SC_DEPT_PLAN_ITEMS_CUSTOM_FABRIC WHERE transaction_id=$3 and sc_asis_plan_fabric_item_id=$2;
+		UPDATE sc_category_planning_items_asis_fabric SET sent_for_approval='Y', DEPT_CHANGED='Y', CUSTOM = 'Y' WHERE transaction_id=$3 and sc_asis_plan_fabric_item_id=$2;
+	end if;
+
+	INSERT INTO SC_DEPT_PLAN_ITEMS_CUSTOM_FABRIC (
+		sc_custom_plan_fabric_item_id ,
+		sc_asis_plan_fabric_item_id,
+		transaction_id ,
+		  fabric_total_length_metre ,
+		  fabric_total_width_inch ,
+		  fabric_total_shrinkage_metre ,
+		  fabric_total_pcs ,
+		  fabric_total_measurement ,
+		  fabric_issue_min_date ,
+		  fabric_issue_max_date ,
+		  fabric_delivery_min_date ,
+		  fabric_delivery_max_date ,
+		  created_by ,
+		  updated_by 
+		)
+		VALUES(
+		$1,
+		$2,
+		$3,
+		$4,
+		$5,
+		$6,
+		$7,
+		$8,
+		$9,
+		$10,
+		$11,
+		$12,
+		$13,
+		$14
+		) RETURNING sc_custom_dept_plan_fabric_item_id into custom_plan_fabric_item_id;
+		output_msg:='Successfully inserted';	
+END
+$BODY$
+  LANGUAGE plpgsql;
+
+
+
+CREATE OR REPLACE FUNCTION func_sc_save_items_dept_custom_material(
+    IN tran_id character varying,
+    IN material_total_quantity double precision,
+    IN material_issue_min_date date,
+    IN material_issue_max_date date,
+    IN material_delivery_min_date date,
+    IN material_delivery_max_date date,
+    IN created_by character varying,
+    IN updated_by character varying,
+    IN var_custom_plan_material_item_id integer,
+    IN var_asis_plan_material_item_id integer,
+    IN counter integer,
+    OUT output_msg text,
+    OUT custom_plan_material_item_id integer)
+  RETURNS record AS
+$BODY$
+DECLARE
+  
+BEGIN   
+
+	
+	if(var_custom_plan_material_item_id is not null) then
+	   DELETE FROM SC_DEPT_PLAN_ITEMS_CUSTOM_MATERIAL WHERE transaction_id=$1 and sc_custom_plan_material_item_id = $9;
+	   UPDATE SC_CAT_PLAN_ITEMS_CUSTOM_MATERIAL SET DEPT_CHANGED='Y' WHERE transaction_id=$1 and sc_custom_plan_material_item_id = $9;
+	   UPDATE sc_category_planning_items_asis_material SET sent_for_approval='Y', DEPT_CHANGED='Y', CUSTOM = 'Y' WHERE transaction_id=$1;
+		
+	   
+	elsif(counter = 1) then
+	   DELETE FROM SC_DEPT_PLAN_ITEMS_CUSTOM_MATERIAL WHERE transaction_id=$1 and sc_asis_plan_material_item_id=$10;
+	   UPDATE sc_category_planning_items_asis_material SET sent_for_approval='Y',  DEPT_CHANGED='Y', CUSTOM = 'Y' WHERE transaction_id=$1 and sc_asis_plan_material_item_id=$10;
+	  
+	end if;
+	
+	INSERT INTO SC_DEPT_PLAN_ITEMS_CUSTOM_MATERIAL (
+		  transaction_id ,
+		  material_total_quantity , 
+		  material_issue_min_date ,
+		  material_issue_max_date ,
+		  material_delivery_min_date ,
+		  material_delivery_max_date ,
+		  created_by ,
+		  updated_by, 
+		  sc_custom_plan_material_item_id ,
+		  sc_asis_plan_material_item_id
+		)
+		VALUES(
+		$1,
+		$2,
+		$3,
+		$4,
+		$5,
+		$6,
+		$7,
+		$8,
+		$9,
+		$10
+		) RETURNING sc_custom_dept_plan_material_item_id into custom_plan_material_item_id;
+		
+		output_msg:='Successfully Insert';
+		--output_msg:= 'INSIDE FUNCTION'||var_custom_plan_material_item_id||'   '||var_asis_plan_material_item_id;
+		
+	
+END
+$BODY$
+  LANGUAGE plpgsql;
+
+
+
+
+CREATE OR REPLACE FUNCTION func_sc_save_items_dept_custom_print(
+    IN tran_id character varying,
+    IN print_total_length_metre double precision,
+    IN print_total_width_inches double precision,
+    IN print_total_pcs integer,
+    IN print_total_measurement double precision,
+    IN print_issue_min_date date,
+    IN print_issue_max_date date,
+    IN print_delivery_min_date date,
+    IN print_delivery_max_date date,
+    IN created_by character varying,
+    IN updated_by character varying,
+    IN var_custom_plan_print_item_id integer,
+    IN var_asis_plan_print_item_id integer,
+    IN counter integer,
+    OUT output_msg text,
+    OUT custom_plan_print_item_id integer)
+  RETURNS record AS
+$BODY$
+DECLARE
+
+BEGIN
+
+if(var_custom_plan_print_item_id is not null) then
+   DELETE FROM SC_DEPT_PLAN_ITEMS_CUSTOM_PRINT WHERE  transaction_id=$1 and sc_custom_plan_print_item_id = $12;
+   UPDATE SC_CAT_PLAN_ITEMS_CUSTOM_PRINT SET DEPT_CHANGED='Y' WHERE  transaction_id=$1 and sc_custom_plan_print_item_id = $12;
+    UPDATE sc_category_planning_items_asis_print SET  sent_for_approval='Y', DEPT_CHANGED='Y', CUSTOM = 'Y' WHERE  transaction_id=$1;
+elsif(counter = 1) then
+   DELETE FROM SC_DEPT_PLAN_ITEMS_CUSTOM_PRINT WHERE  transaction_id=$1 and sc_asis_plan_print_item_id=$13;
+   UPDATE sc_category_planning_items_asis_print SET  sent_for_approval='Y',DEPT_CHANGED='Y', CUSTOM = 'Y' WHERE  transaction_id=$1 and sc_asis_plan_print_item_id=$13;
+end if;
+
+
+INSERT INTO SC_DEPT_PLAN_ITEMS_CUSTOM_PRINT (
+	transaction_id ,
+	  print_total_length_metre ,
+	  print_total_width_inches ,
+	  print_total_pcs ,
+	  print_total_measurement ,
+	  print_issue_min_date ,
+	  print_issue_max_date ,
+	  print_delivery_min_date ,
+	  print_delivery_max_date ,
+	  created_by ,
+	  updated_by ,
+	  sc_custom_plan_print_item_id ,
+	  sc_asis_plan_print_item_id
+	)
+	VALUES(
+	$1,
+	$2,
+	$3,
+	$4,
+	$5,
+	$6,
+	$7,
+	$8,
+	$9,
+	$10,
+	$11,
+	$12,
+	$13
+	) RETURNING sc_custom_dept_plan_print_item_id into  custom_plan_print_item_id;
+	output_msg:='Successfully inserted';
+END
+$BODY$
+  LANGUAGE plpgsql;
+
+
+
+
+
+
